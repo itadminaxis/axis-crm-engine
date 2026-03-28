@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torre de Visión — Axis CRM Engine 🏛️</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0A0A0A;
+            --cream: #FFF8F0;
+            --rosa: #FF2D7B;
+            --naranja: #FF6B2B;
+            --char: #111;
+            --glass: rgba(255, 255, 255, 0.03);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--ink);
+            color: var(--cream);
+            padding: 40px;
+        }
+        h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 32px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--rosa), var(--naranja));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle { color: #888; font-size: 14px; margin-bottom: 40px; }
+        .auth-card {
+            background: var(--char);
+            border: 1px solid var(--glass);
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+            max-width: 500px;
+        }
+        input {
+            width: 100%;
+            background: #000;
+            border: 1px solid #333;
+            color: white;
+            padding: 12px;
+            border-radius: 4px;
+            margin-top: 8px;
+            font-family: inherit;
+        }
+        button {
+            background: var(--rosa);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 16px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255,45,123,0.3); }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: var(--char);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th {
+            text-align: left;
+            background: #161616;
+            padding: 16px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #555;
+        }
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #1a1a1a;
+            font-size: 14px;
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            background: #333;
+        }
+        .status-nuevo { color: var(--naranja); border: 1px solid var(--naranja); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h1>Torre de Visión 🏛️</h1>
+    <p class="subtitle">Monitoreo de leads en tiempo real — Axis CRM Engine</p>
+
+    <div id="login-view" class="auth-card">
+        <label>API Key Maestra</label>
+        <input type="password" id="api-key" placeholder="Ingresa tu llave del búnker...">
+        <button onclick="loadLeads()">Entrar al Búnker</button>
+    </div>
+
+    <div id="dashboard-view" class="hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>Leads Capturados</h2>
+            <button onclick="loadLeads()" style="margin-top: 0; background: #222;">🔄 Actualizar</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Teléfono</th>
+                    <th>Nombre</th>
+                    <th>Origen</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody id="leads-body">
+                <!-- Data will load here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function loadLeads() {
+            const apiKey = document.getElementById('api-key').value;
+            if (!apiKey) return alert('Por favor ingresa la API Key');
+
+            try {
+                const response = await fetch('/leads', {
+                    headers: { 'x-api-key': apiKey }
+                });
+
+                if (!response.ok) throw new Error('Llave inválida o error de conexión');
+
+                const leads = await response.json();
+                
+                document.getElementById('login-view').classList.add('hidden');
+                document.getElementById('dashboard-view').classList.remove('hidden');
+
+                const body = document.getElementById('leads-body');
+                body.innerHTML = '';
+
+                leads.forEach(lead => {
+                    const row = document.createElement('tr');
+                    const date = new Date(lead.created_at).toLocaleString();
+                    const name = lead.custom_data.nombre || lead.custom_data.custom_data?.nombre || 'N/A';
+                    const source = lead.custom_data.source || 'Directo';
+                    const status = lead.custom_data.status || 'Nuevo';
+
+                    row.innerHTML = `
+                        <td>${date}</td>
+                        <td style="font-weight: 600; color: var(--rosa);">${lead.phone}</td>
+                        <td>${name}</td>
+                        <td><span class="badge">${source}</span></td>
+                        <td><span class="badge status-nuevo">${status}</span></td>
+                    `;
+                    body.appendChild(row);
+                });
+
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+    </script>
+</body>
+</html>

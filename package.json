@@ -1,0 +1,32 @@
+{
+  "name": "axis-crm-engine",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "worker": "node src/worker.js",
+    "dev": "node src/server.js & node src/worker.js",
+    "test": "node tests/test-core.js",
+    "test:rls": "node tests/test-rls.js"
+  },
+  "dependencies": {
+    "axios": "^1.14.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^4.22.1",
+    "express-rate-limit": "^8.3.1",
+    "graphile-worker": "^0.16.6",
+    "helmet": "^8.1.0",
+    "pg": "^8.20.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "description": "",
+  "directories": {
+    "doc": "docs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

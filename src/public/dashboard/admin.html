@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Estacionamiento - Admin Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0A0A0A;
+            --cream: #FFF8F0;
+            --rosa: #FF2D7B;
+            --naranja: #FF6B2B;
+            --verde: #2ECC71;
+            --azul: #00D1FF;
+            --char: #111;
+            --glass: rgba(255, 255, 255, 0.03);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--ink);
+            color: var(--cream);
+            min-height: 100vh;
+        }
+
+        /* AUTH */
+        .auth-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--ink);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+        .auth-card {
+            background: var(--char); padding: 40px; border-radius: 12px;
+            width: 400px; text-align: center; border: 1px solid #222;
+        }
+        .auth-card h1 { font-family: 'Syne'; font-size: 22px; background: linear-gradient(135deg, var(--rosa), var(--naranja)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .auth-card input {
+            width: 100%; background: #000; border: 1px solid #333; color: white;
+            padding: 12px; margin: 20px 0; border-radius: 4px; font-family: 'Outfit';
+        }
+
+        /* HEADER */
+        header {
+            padding: 15px 30px; background: rgba(0,0,0,0.9);
+            border-bottom: 1px solid #222;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        header h1 { font-family: 'Syne'; font-size: 20px; background: linear-gradient(135deg, var(--rosa), var(--naranja)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header-actions { display: flex; gap: 12px; align-items: center; }
+        .header-actions a { color: #555; text-decoration: none; font-size: 12px; }
+        .header-actions a:hover { color: var(--cream); }
+
+        /* STATS BAR */
+        .stats-bar {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px; padding: 20px 30px;
+        }
+        .stat-card {
+            background: var(--char); border: 1px solid #222; border-radius: 8px;
+            padding: 16px; text-align: center;
+        }
+        .stat-card .label { font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-card .value { font-family: 'Syne'; font-size: 28px; color: var(--naranja); margin: 6px 0; }
+        .stat-card .sub { font-size: 11px; color: #444; }
+
+        /* MAIN */
+        main { padding: 0 30px 30px; }
+        .section-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin: 25px 0 15px;
+        }
+        .section-header h2 { font-family: 'Syne'; font-size: 16px; color: #888; }
+
+        /* BUTTONS */
+        .btn {
+            border: none; padding: 10px 20px; border-radius: 6px;
+            cursor: pointer; font-weight: 600; font-family: 'Outfit'; font-size: 13px;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--rosa); color: white; }
+        .btn-primary:hover { background: var(--naranja); }
+        .btn-sm { padding: 6px 12px; font-size: 11px; }
+        .btn-ghost { background: transparent; border: 1px solid #333; color: #888; }
+        .btn-ghost:hover { border-color: var(--rosa); color: var(--rosa); }
+        .btn-danger { background: #331111; color: #f55; border: 1px solid #441111; }
+        .btn-danger:hover { background: #441111; }
+
+        /* PROJECT GRID */
+        .projects-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 16px;
+        }
+        .project-card {
+            background: var(--char); border: 1px solid #222; border-radius: 10px;
+            padding: 20px; position: relative; transition: border-color 0.2s;
+        }
+        .project-card:hover { border-color: #444; }
+        .project-card .card-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        .project-card .project-name { font-weight: 600; font-size: 16px; color: var(--cream); }
+        .project-card .project-desc { font-size: 12px; color: #555; margin-bottom: 14px; }
+        .project-card .status-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            display: inline-block; margin-right: 4px;
+        }
+        .project-card .status-dot.on { background: var(--verde); }
+        .project-card .status-dot.off { background: #333; }
+
+        /* TOKEN DISPLAY */
+        .token-row {
+            background: #000; border: 1px solid #222; border-radius: 4px;
+            padding: 8px 10px; display: flex; justify-content: space-between;
+            align-items: center; margin: 10px 0;
+        }
+        .token-row code { font-size: 11px; color: var(--azul); font-family: monospace; }
+        .token-row .btn { font-size: 10px; padding: 3px 8px; }
+
+        /* MODULE TOGGLES */
+        .modules-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+        .module-toggle {
+            display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+            background: #0a0a0a; border-radius: 4px; font-size: 11px;
+        }
+        .module-toggle .switch {
+            position: relative; width: 32px; height: 18px;
+            background: #222; border-radius: 9px; cursor: pointer;
+            transition: background 0.2s;
+        }
+        .module-toggle .switch.on { background: var(--verde); }
+        .module-toggle .switch::after {
+            content: ''; position: absolute; top: 2px; left: 2px;
+            width: 14px; height: 14px; background: white; border-radius: 50%;
+            transition: transform 0.2s;
+        }
+        .module-toggle .switch.on::after { transform: translateX(14px); }
+
+        /* LEAD STATS IN CARD */
+        .card-stats {
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+            margin-top: 12px; padding-top: 12px; border-top: 1px solid #1a1a1a;
+        }
+        .card-stats .mini-stat { text-align: center; }
+        .card-stats .mini-stat .num { font-family: 'Syne'; font-size: 18px; color: var(--naranja); }
+        .card-stats .mini-stat .lbl { font-size: 9px; color: #444; text-transform: uppercase; }
+
+        /* CARD ACTIONS */
+        .card-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: none; justify-content: center;
+            align-items: center; z-index: 500;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: #111; border: 1px solid #333; border-radius: 12px;
+            padding: 30px; width: 450px; max-width: 90vw;
+        }
+        .modal h3 { font-family: 'Syne'; font-size: 18px; color: var(--naranja); margin-bottom: 20px; }
+        .modal label { display: block; font-size: 11px; color: #888; margin-bottom: 4px; margin-top: 14px; text-transform: uppercase; }
+        .modal input, .modal textarea {
+            width: 100%; background: #000; border: 1px solid #333; color: white;
+            padding: 10px; border-radius: 4px; font-family: 'Outfit'; font-size: 13px;
+        }
+        .modal textarea { height: 60px; resize: vertical; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+
+        .hidden { display: none; }
+        .empty-state { text-align: center; padding: 60px; color: #333; }
+        .empty-state h3 { font-family: 'Syne'; color: #444; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- AUTH OVERLAY -->
+    <div id="auth-overlay" class="auth-overlay">
+        <div class="auth-card">
+            <h1>El Estacionamiento</h1>
+            <p style="color:#888; margin-top:10px;">Panel Admin - Ingresa tu API Key Maestra.</p>
+            <input type="password" id="api-key" placeholder="93f9a45054b07241...">
+            <button class="btn btn-primary" style="width:100%;" onclick="initAdmin()">Entrar</button>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header id="main-header" class="hidden">
+        <h1>El Estacionamiento</h1>
+        <div class="header-actions">
+            <a href="/dashboard/station">Command Station</a>
+            <a href="/api-docs" target="_blank">API Docs</a>
+            <span id="tenant-name" style="color:var(--verde); font-size:12px; font-weight:600;"></span>
+        </div>
+    </header>
+
+    <!-- STATS BAR -->
+    <div id="stats-bar" class="stats-bar hidden">
+        <div class="stat-card">
+            <div class="label">X-Wings Activos</div>
+            <div class="value" id="stat-projects">-</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Leads Totales</div>
+            <div class="value" id="stat-leads">-</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Leads Hoy</div>
+            <div class="value" id="stat-today">-</div>
+            <div class="sub">ultimas 24h</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Leads Semana</div>
+            <div class="value" id="stat-week">-</div>
+            <div class="sub">ultimos 7 dias</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Eventos Registrados</div>
+            <div class="value" id="stat-events">-</div>
+            <div class="sub">audit trail</div>
+        </div>
+    </div>
+
+    <!-- MAIN -->
+    <main id="main-content" class="hidden">
+        <div class="section-header">
+            <h2>X-WINGS REGISTRADOS</h2>
+            <button class="btn btn-primary" onclick="openCreateModal()">+ Nuevo X-Wing</button>
+        </div>
+        <div id="projects-grid" class="projects-grid">
+            <div class="empty-state">
+                <h3>Sin X-Wings</h3>
+                <p>Registra tu primer proyecto para empezar.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- CREATE/EDIT MODAL -->
+    <div id="project-modal" class="modal-overlay">
+        <div class="modal">
+            <h3 id="modal-title">Nuevo X-Wing</h3>
+            <input type="hidden" id="modal-project-id">
+            <label>Nombre</label>
+            <input type="text" id="modal-name" placeholder="Ej: Sicilia Plus Landing">
+            <label>Descripcion</label>
+            <textarea id="modal-desc" placeholder="Landing page para Residencial Sicilia Plus..."></textarea>
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+                <button class="btn btn-primary" id="modal-save-btn" onclick="saveProject()">Crear</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONFIRM DELETE MODAL -->
+    <div id="delete-modal" class="modal-overlay">
+        <div class="modal" style="width:360px;">
+            <h3 style="color:#f55;">Eliminar X-Wing</h3>
+            <p style="color:#888; font-size:13px;">Esta accion es irreversible. Los leads vinculados perderan su referencia a este proyecto.</p>
+            <input type="hidden" id="delete-project-id">
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="closeDeleteModal()">Cancelar</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+let apiKey;
+let projects = [];
+
+async function initAdmin() {
+    apiKey = document.getElementById('api-key').value;
+    if (!apiKey) return alert('Ingresa tu API Key');
+
+    // Validate key
+    try {
+        const r = await fetch('/test-identity', { headers: { 'x-api-key': apiKey } });
+        if (!r.ok) return alert('API Key invalida');
+        const data = await r.json();
+        document.getElementById('tenant-name').textContent = data.tenant.name;
+    } catch (e) {
+        return alert('Error de conexion');
+    }
+
+    document.getElementById('auth-overlay').classList.add('hidden');
+    document.getElementById('main-header').classList.remove('hidden');
+    document.getElementById('stats-bar').classList.remove('hidden');
+    document.getElementById('main-content').classList.remove('hidden');
+
+    await loadAll();
+    setInterval(loadAll, 15000);
+}
+
+async function loadAll() {
+    await Promise.all([loadStats(), loadProjects()]);
+}
+
+async function loadStats() {
+    try {
+        const r = await fetch('/projects/stats', { headers: { 'x-api-key': apiKey } });
+        const s = await r.json();
+        document.getElementById('stat-projects').textContent = s.total_projects;
+        document.getElementById('stat-leads').textContent = s.total_leads;
+        document.getElementById('stat-today').textContent = s.leads_today;
+        document.getElementById('stat-week').textContent = s.leads_week;
+        document.getElementById('stat-events').textContent = s.total_events;
+    } catch (e) {}
+}
+
+async function loadProjects() {
+    try {
+        const r = await fetch('/projects', { headers: { 'x-api-key': apiKey } });
+        projects = await r.json();
+        renderProjects();
+    } catch (e) {}
+}
+
+function renderProjects() {
+    const grid = document.getElementById('projects-grid');
+
+    if (projects.length === 0) {
+        grid.innerHTML = `<div class="empty-state"><h3>Sin X-Wings</h3><p>Registra tu primer proyecto para empezar.</p></div>`;
+        return;
+    }
+
+    grid.innerHTML = projects.map(p => `
+        <div class="project-card" id="card-${p.id}">
+            <div class="card-header">
+                <div>
+                    <div class="project-name">${esc(p.name)}</div>
+                    <div class="project-desc">${esc(p.description || 'Sin descripcion')}</div>
+                </div>
+            </div>
+
+            <div class="token-row">
+                <code id="token-${p.id}">${p.public_token || 'Sin token'}</code>
+                <div>
+                    <button class="btn btn-ghost btn-sm" onclick="copyToken('${p.public_token}')">Copiar</button>
+                    <button class="btn btn-ghost btn-sm" onclick="regenToken('${p.id}')">Regenerar</button>
+                </div>
+            </div>
+
+            <div class="modules-grid">
+                ${moduleToggle(p.id, 'enable_ai_prescriptive', 'IA Prescriptiva', p.enable_ai_prescriptive)}
+                ${moduleToggle(p.id, 'enable_instant_response', 'Speed to Lead', p.enable_instant_response)}
+                ${moduleToggle(p.id, 'enable_blockchain_seal', 'Blockchain', p.enable_blockchain_seal)}
+                ${moduleToggle(p.id, 'enable_3d_immersive', '3D Inmersivo', p.enable_3d_immersive)}
+                ${moduleToggle(p.id, 'enable_payments', 'Pagos', p.enable_payments)}
+            </div>
+
+            <div class="card-stats">
+                <div class="mini-stat"><div class="num">${p.total_leads}</div><div class="lbl">Total</div></div>
+                <div class="mini-stat"><div class="num">${p.leads_today}</div><div class="lbl">Hoy</div></div>
+                <div class="mini-stat"><div class="num">${p.leads_week}</div><div class="lbl">Semana</div></div>
+            </div>
+
+            <div class="card-actions">
+                <button class="btn btn-ghost btn-sm" onclick="openEditModal('${p.id}')">Editar</button>
+                <button class="btn btn-danger btn-sm" onclick="openDeleteModal('${p.id}')">Eliminar</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function moduleToggle(projectId, field, label, isOn) {
+    return `
+        <div class="module-toggle">
+            <div class="switch ${isOn ? 'on' : ''}" onclick="toggleModule('${projectId}', '${field}', ${!isOn})"></div>
+            <span style="color:${isOn ? '#ccc' : '#444'}">${label}</span>
+        </div>
+    `;
+}
+
+async function toggleModule(projectId, field, newValue) {
+    try {
+        await fetch(`/projects/${projectId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+            body: JSON.stringify({ [field]: newValue })
+        });
+        await loadProjects();
+    } catch (e) {
+        alert('Error al actualizar modulo');
+    }
+}
+
+function openCreateModal() {
+    document.getElementById('modal-title').textContent = 'Nuevo X-Wing';
+    document.getElementById('modal-project-id').value = '';
+    document.getElementById('modal-name').value = '';
+    document.getElementById('modal-desc').value = '';
+    document.getElementById('modal-save-btn').textContent = 'Crear';
+    document.getElementById('project-modal').classList.add('open');
+}
+
+function openEditModal(id) {
+    const p = projects.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('modal-title').textContent = 'Editar X-Wing';
+    document.getElementById('modal-project-id').value = id;
+    document.getElementById('modal-name').value = p.name;
+    document.getElementById('modal-desc').value = p.description || '';
+    document.getElementById('modal-save-btn').textContent = 'Guardar';
+    document.getElementById('project-modal').classList.add('open');
+}
+
+function closeModal() {
+    document.getElementById('project-modal').classList.remove('open');
+}
+
+async function saveProject() {
+    const id = document.getElementById('modal-project-id').value;
+    const name = document.getElementById('modal-name').value.trim();
+    const description = document.getElementById('modal-desc').value.trim();
+
+    if (!name) return alert('El nombre es obligatorio');
+
+    try {
+        if (id) {
+            await fetch(`/projects/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+                body: JSON.stringify({ name, description })
+            });
+        } else {
+            await fetch('/projects', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+                body: JSON.stringify({ name, description })
+            });
+        }
+        closeModal();
+        await loadAll();
+    } catch (e) {
+        alert('Error al guardar');
+    }
+}
+
+function openDeleteModal(id) {
+    document.getElementById('delete-project-id').value = id;
+    document.getElementById('delete-modal').classList.add('open');
+}
+
+function closeDeleteModal() {
+    document.getElementById('delete-modal').classList.remove('open');
+}
+
+async function confirmDelete() {
+    const id = document.getElementById('delete-project-id').value;
+    try {
+        await fetch(`/projects/${id}`, {
+            method: 'DELETE',
+            headers: { 'x-api-key': apiKey }
+        });
+        closeDeleteModal();
+        await loadAll();
+    } catch (e) {
+        alert('Error al eliminar');
+    }
+}
+
+function copyToken(token) {
+    navigator.clipboard.writeText(token);
+}
+
+async function regenToken(id) {
+    if (!confirm('Regenerar el token invalidara el anterior. Los X-Wings que lo usen dejaran de funcionar hasta actualizar. Continuar?')) return;
+    try {
+        await fetch(`/projects/${id}/regenerate-token`, {
+            method: 'POST',
+            headers: { 'x-api-key': apiKey }
+        });
+        await loadProjects();
+    } catch (e) {
+        alert('Error al regenerar token');
+    }
+}
+
+function esc(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+</script>
+</body>
+</html>

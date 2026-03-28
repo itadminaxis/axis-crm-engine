@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CASAYA — La satisfacción inmobiliaria</title>
+<meta name="description" content="Integramos canal digital, datos y asesoría profesional a la comercialización inmobiliaria. Para desarrolladoras que quieren vender mejor. Para personas que merecen comprar mejor.">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0A0A0A;--cream:#FFF8F0;--rosa:#FF2D7B;
+  --naranja:#FF6B2B;--ambar:#FFBA08;--char:#111;--char2:#161616;
+  --mid:#8A8A8A;--white:#FAFAF8;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Outfit',sans-serif;font-weight:300;background:var(--ink);color:var(--cream);overflow-x:hidden;}
+
+/* GENERATIVE LAYER */
+#gen-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+
+#progress{position:fixed;top:0;left:0;height:2px;width:0%;background:linear-gradient(to right,var(--rosa),var(--naranja),var(--ambar));z-index:600;transition:width .1s;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:400;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;transition:background .4s;}
+nav.scrolled{background:rgba(10,10,10,.96);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,45,123,.12);}
+.nav-brand{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;letter-spacing:.08em;color:var(--cream);text-transform:uppercase;text-decoration:none;}
+.nav-brand .ya{color:var(--naranja);}
+.nav-badge{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.12em;color:var(--rosa);border:1px solid rgba(255,45,123,.35);padding:3px 8px;border-radius:3px;margin-left:8px;}
+.nav-cta{background:rgba(255,45,123,.12);border:1px solid rgba(255,45,123,.3);color:var(--rosa);text-decoration:none;padding:9px 18px;border-radius:40px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;transition:all .3s;}
+.nav-cta:hover{background:var(--rosa);color:var(--ink);}
+
+/* ═══ HERO ═══ */
+#hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:80px 28px;position:relative;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse at 25% 50%,rgba(255,45,123,.07),transparent 55%),radial-gradient(ellipse at 75% 30%,rgba(255,107,43,.05),transparent 50%),var(--ink);}
+.hero-grain{position:absolute;inset:0;z-index:1;opacity:.025;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:200px;}
+
+/* ═══ ORBITAL SYSTEM ═══ */
+.orbital{position:absolute;right:-8%;top:50%;transform:translate(0,-50%);z-index:1;width:clamp(400px,60vw,800px);height:clamp(400px,60vw,800px);pointer-events:none;opacity:0;animation:orbIn 2s 1s cubic-bezier(.16,1,.3,1) forwards;}
+@keyframes orbIn{to{opacity:1;}}
+
+.orb-ring{position:absolute;inset:0;border-radius:50%;animation:orbSpin 30s linear infinite;}
+.orb-ring::before{content:'';position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(0,208,132,.2);mask-image:conic-gradient(transparent 0%,white 30%,transparent 60%);-webkit-mask-image:conic-gradient(transparent 0%,white 30%,transparent 60%);}
+
+.orb-ring2{position:absolute;inset:12%;border-radius:50%;animation:orbSpin 40s linear infinite reverse;}
+.orb-ring2::before{content:'';position:absolute;inset:0;border-radius:50%;border:1.5px solid rgba(0,171,107,.18);mask-image:conic-gradient(transparent 20%,white 50%,transparent 80%);-webkit-mask-image:conic-gradient(transparent 20%,white 50%,transparent 80%);}
+
+.orb-ring3{position:absolute;inset:25%;border-radius:50%;animation:orbSpin 22s linear infinite;}
+.orb-ring3::before{content:'';position:absolute;inset:0;border-radius:50%;border:1px solid rgba(0,208,132,.12);}
+
+.orb-ring4{position:absolute;inset:-8%;border-radius:50%;animation:orbSpin 55s linear infinite;}
+.orb-ring4::before{content:'';position:absolute;inset:0;border-radius:50%;border:1px solid rgba(0,171,107,.08);mask-image:conic-gradient(transparent 10%,white 40%,transparent 70%);-webkit-mask-image:conic-gradient(transparent 10%,white 40%,transparent 70%);}
+
+@keyframes orbSpin{to{transform:rotate(360deg);}}
+
+/* Glowing dots on orbits */
+.orb-dot{position:absolute;border-radius:50%;}
+.od1{width:8px;height:8px;top:-4px;left:50%;background:var(--rosa);box-shadow:0 0 20px var(--rosa),0 0 50px rgba(255,45,123,.4);animation:orbPulse 3s ease-in-out infinite;}
+.od2{width:7px;height:7px;bottom:12%;right:-3px;background:var(--naranja);box-shadow:0 0 18px var(--naranja),0 0 45px rgba(255,107,43,.35);animation:orbPulse 3.5s ease-in-out infinite .6s;}
+.od3{width:6px;height:6px;top:25%;left:12%;background:var(--ambar);box-shadow:0 0 16px var(--ambar),0 0 40px rgba(255,186,8,.3);animation:orbPulse 2.5s ease-in-out infinite 1.2s;}
+.od4{width:5px;height:5px;bottom:5%;left:25%;background:var(--rosa);box-shadow:0 0 14px rgba(255,45,123,.6);animation:orbPulse 4s ease-in-out infinite .3s;}
+.od5{width:6px;height:6px;top:8%;right:18%;background:var(--naranja);box-shadow:0 0 16px rgba(255,107,43,.5);animation:orbPulse 3s ease-in-out infinite .9s;}
+.od6{width:4px;height:4px;bottom:30%;right:8%;background:var(--ambar);box-shadow:0 0 12px rgba(255,186,8,.5);animation:orbPulse 3.2s ease-in-out infinite 1.5s;}
+.od7{width:7px;height:7px;top:42%;right:-4px;background:var(--rosa);box-shadow:0 0 20px rgba(255,45,123,.35);animation:orbPulse 4.5s ease-in-out infinite .2s;}
+@keyframes orbPulse{0%,100%{opacity:.3;transform:scale(1);}50%{opacity:1;transform:scale(2.5);}}
+
+/* Center pulse */
+.orb-core{position:absolute;inset:38%;border-radius:50%;background:radial-gradient(circle,rgba(255,45,123,.1),rgba(255,107,43,.05),transparent 70%);animation:coreBreath 5s ease-in-out infinite alternate;}
+@keyframes coreBreath{from{opacity:.3;transform:scale(.9);}to{opacity:.8;transform:scale(1.1);}}
+.orb-core::after{content:'';position:absolute;inset:20%;border-radius:50%;background:radial-gradient(circle,rgba(255,186,8,.12),transparent 70%);animation:coreBreath 3s ease-in-out infinite alternate-reverse;}
+
+/* Center icon */
+.orb-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);animation:iconFloat 6s ease-in-out infinite,iconGlow 4s ease-in-out infinite;filter:drop-shadow(0 0 8px rgba(0,208,132,.3));}
+@keyframes iconFloat{0%,100%{transform:translate(-50%,-50%) translateY(0);}50%{transform:translate(-50%,-50%) translateY(-8px);}}
+@keyframes iconGlow{0%,100%{filter:drop-shadow(0 0 8px rgba(0,208,132,.3)) drop-shadow(0 0 16px rgba(0,208,132,.1));}50%{filter:drop-shadow(0 0 16px rgba(0,208,132,.6)) drop-shadow(0 0 32px rgba(0,208,132,.3));}}
+@media(max-width:768px){.orbital{right:-25%;width:300px;height:300px;}}
+
+/* HERO CONTENT */
+.hero-content{position:relative;z-index:3;padding:0 28px;max-width:660px;}
+.hero-eyebrow{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.32em;text-transform:uppercase;color:var(--rosa);margin-bottom:18px;opacity:0;animation:slideUp .7s .8s forwards;display:flex;align-items:center;gap:10px;}
+.hero-eyebrow::before{content:'';width:24px;height:1px;background:var(--rosa);}
+.hero-h1{font-family:'Syne',sans-serif;font-size:clamp(48px,12vw,84px);font-weight:700;line-height:1.08;letter-spacing:-0.02em;color:var(--cream);margin-bottom:24px;opacity:0;animation:slideUp .9s .95s cubic-bezier(.16,1,.3,1) forwards;}
+.hero-h1 em{font-style:normal;font-weight:700;background:linear-gradient(135deg,var(--rosa),var(--naranja));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{font-size:15px;line-height:1.75;color:var(--mid);max-width:480px;margin-bottom:32px;opacity:0;animation:slideUp .7s 1.1s forwards;}
+.hero-cta-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;opacity:0;animation:slideUp .7s 1.25s forwards;}
+.btn-p{display:inline-flex;align-items:center;gap:8px;background:var(--rosa);color:var(--cream);text-decoration:none;padding:14px 24px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;transition:all .35s cubic-bezier(.4,0,.2,1);border:1px solid var(--rosa);position:relative;overflow:hidden;}
+.btn-p::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--naranja),var(--rosa));opacity:0;transition:opacity .35s;}
+.btn-p:hover::before{opacity:1;}
+.btn-p:hover{border-color:var(--naranja);transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,45,123,.25);}
+.btn-p span{position:relative;z-index:1;}
+.btn-s{display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--naranja);text-decoration:none;padding:14px 24px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;transition:all .35s;border:1px solid rgba(255,107,43,.3);}
+.btn-s:hover{background:var(--naranja);color:var(--ink);transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,107,43,.2);}
+@keyframes slideUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+
+/* STAT BAR — animated counters */
+.stat-bar{margin-top:36px;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid rgba(255,45,123,.1);opacity:0;animation:slideUp .7s 1.4s forwards;}
+.stat{padding:16px 6px;text-align:center;border-right:1px solid rgba(255,45,123,.05);}
+.stat:last-child{border:none;}
+.stat-n{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--rosa);line-height:1;}
+.stat-l{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:.06em;text-transform:uppercase;color:#555;margin-top:3px;}
+.stat-src{font-size:6px;color:#333;margin-top:1px;font-style:italic;}
+
+/* ═══ SHARED ═══ */
+.gd{height:1px;margin:0 28px;background:linear-gradient(to right,transparent,rgba(255,45,123,.18),transparent);position:relative;z-index:1;}
+.sec{position:relative;z-index:1;}
+.si{max-width:1100px;margin:0 auto;padding:80px 28px;}
+.sec-tag{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--rosa);display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.sec-tag::before{content:'';width:0;height:1px;background:var(--rosa);transition:width 1.2s cubic-bezier(.16,1,.3,1);}
+.sec-tag.vis::before{width:24px;}
+.sec-h{font-family:'Syne',sans-serif;font-size:clamp(26px,6.5vw,40px);font-weight:700;line-height:1.18;letter-spacing:0.02em;margin-bottom:14px;}
+.sec-h em{font-style:normal;font-weight:700;background:linear-gradient(135deg,var(--rosa),var(--naranja));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1);}
+.reveal.vis{opacity:1;transform:translateY(0);}
+.reveal-d1{transition-delay:.1s;}.reveal-d2{transition-delay:.2s;}.reveal-d3{transition-delay:.3s;}.reveal-d4{transition-delay:.4s;}
+
+/* ═══ TESIS ═══ */
+#tesis{background:rgba(250,250,248,.88);}
+#tesis .sec-h{color:var(--ink);}
+#tesis .sec-h em{-webkit-text-fill-color:transparent;}
+.tesis-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;margin-top:28px;}
+@media(max-width:768px){.tesis-grid{grid-template-columns:1fr;gap:24px;}}
+.tesis-list{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.tesis-list li{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:rgba(255,248,240,.8);border-left:2px solid var(--rosa);font-size:13px;line-height:1.6;color:#444;opacity:0;transform:translateX(-20px);transition:all .5s cubic-bezier(.16,1,.3,1);}
+.tesis-list li.vis{opacity:1;transform:translateX(0);}
+.tesis-answer strong{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--ink);display:block;margin-bottom:10px;line-height:1.3;}
+.tesis-answer p{font-size:13px;line-height:1.75;color:#666;margin-bottom:8px;}
+
+.pull-quote{background:rgba(22,22,22,.9);padding:24px 28px;border-top:1px solid rgba(255,45,123,.08);position:relative;overflow:hidden;}
+.pull-quote::before{content:'';position:absolute;left:0;top:0;width:3px;height:100%;background:linear-gradient(to bottom,var(--rosa),var(--naranja),var(--ambar));animation:quoteShimmer 3s ease-in-out infinite;}
+@keyframes quoteShimmer{0%,100%{opacity:.4;}50%{opacity:1;}}
+.pull-quote p{font-family:'Syne',sans-serif;font-size:15px;font-style:italic;font-weight:400;line-height:1.55;color:var(--cream);margin-bottom:4px;padding-left:16px;}
+.pull-quote small{font-family:'Space Mono',monospace;font-size:9px;color:var(--rosa);letter-spacing:.08em;padding-left:16px;}
+
+/* ═══ DIFERENCIADORES ═══ */
+#dif{background:rgba(17,17,17,.92);}
+.dif-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:28px;background:rgba(255,45,123,.06);}
+@media(max-width:768px){.dif-grid{grid-template-columns:1fr;}}
+.dif-card{background:rgba(17,17,17,.85);padding:28px 22px;opacity:0;transform:translateY(14px);transition:all .5s cubic-bezier(.16,1,.3,1);position:relative;overflow:hidden;}
+.dif-card.vis{opacity:1;transform:translateY(0);}
+.dif-card::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:linear-gradient(to right,var(--rosa),var(--naranja));transition:width .6s cubic-bezier(.16,1,.3,1);}
+.dif-card:hover::after{width:100%;}
+.dif-card:hover{background:rgba(22,22,22,.9);transform:translateY(-4px);}
+.dif-n{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;background:linear-gradient(135deg,var(--rosa),var(--naranja));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;opacity:.35;line-height:1;margin-bottom:10px;}
+.dif-card h3{font-size:14px;font-weight:500;margin-bottom:8px;color:var(--cream);transition:color .3s;}
+.dif-card:hover h3{color:var(--naranja);}
+.dif-card p{font-size:12px;line-height:1.7;color:var(--mid);}
+
+/* ═══ INTEGRACIÓN ═══ */
+#integracion{background:rgba(250,250,248,.88);}
+#integracion .sec-h{color:var(--ink);}
+#integracion .sec-h em{-webkit-text-fill-color:transparent;}
+.int-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-top:28px;background:rgba(255,45,123,.06);}
+@media(max-width:768px){.int-grid{grid-template-columns:1fr;}}
+.int-card{background:rgba(250,250,248,.8);padding:28px 24px;opacity:0;transform:translateY(14px);transition:all .5s cubic-bezier(.16,1,.3,1);border-left:3px solid transparent;}
+.int-card.vis{opacity:1;transform:translateY(0);}
+.int-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.06);}
+.int-card.dev{border-left-color:var(--naranja);}
+.int-card.buy{border-left-color:var(--rosa);}
+.int-card.net{border-left-color:var(--ambar);}
+.int-aud{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+.int-aud.dev{color:var(--naranja);}.int-aud.buy{color:var(--rosa);}.int-aud.net{color:var(--ambar);}
+.int-card h3{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--ink);margin-bottom:6px;}
+.int-card p{font-size:12px;line-height:1.7;color:#666;}
+
+/* ═══ PROCESO ═══ */
+#proceso{background:rgba(255,248,240,.88);}
+.proc-tabs{display:flex;gap:4px;margin-bottom:24px;flex-wrap:wrap;}
+.proc-tab{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:8px 16px;border:1px solid rgba(255,45,123,.2);border-radius:40px;background:transparent;color:var(--mid);cursor:pointer;transition:all .4s cubic-bezier(.4,0,.2,1);}
+.proc-tab.on{background:var(--rosa);color:var(--cream);border-color:var(--rosa);box-shadow:0 4px 16px rgba(255,45,123,.2);}
+.proc-flow{display:none;}.proc-flow.vis{display:block;}
+.steps-v{display:flex;flex-direction:column;}
+.step-v{display:flex;gap:20px;min-height:72px;}
+.step-left{display:flex;flex-direction:column;align-items:center;min-width:38px;}
+.step-num{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;width:38px;height:38px;border-radius:50%;border:1.5px solid var(--rosa);display:flex;align-items:center;justify-content:center;color:var(--rosa);transition:all .4s;}
+.step-num.alt{color:var(--naranja);border-color:var(--naranja);}
+.step-v:hover .step-num{background:var(--rosa);color:var(--cream);transform:scale(1.15);}
+.step-v:hover .step-num.alt{background:var(--naranja);color:var(--ink);}
+.step-conn{width:1px;flex:1;background:linear-gradient(to bottom,var(--rosa),rgba(255,45,123,.08));margin:4px 0;}
+.step-conn.alt{background:linear-gradient(to bottom,var(--naranja),rgba(255,107,43,.08));}
+.step-right{padding-bottom:20px;}
+.step-right h3{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:3px;}
+.step-right p{font-size:12px;line-height:1.65;color:#666;max-width:440px;}
+
+/* ═══ RED ═══ */
+#red{background:rgba(10,10,10,.9);}
+.red-featured{margin-top:28px;background:rgba(22,22,22,.85);border:1px solid rgba(255,45,123,.1);padding:32px 24px;position:relative;overflow:hidden;transition:border-color .4s;}
+.red-featured:hover{border-color:rgba(255,107,43,.25);}
+.red-featured::before{content:'';position:absolute;top:-50%;right:-50%;width:200%;height:200%;background:conic-gradient(from 0deg,transparent,rgba(255,45,123,.03),transparent,rgba(255,107,43,.03),transparent);animation:redGlow 8s linear infinite;pointer-events:none;}
+@keyframes redGlow{to{transform:rotate(360deg);}}
+.red-badge{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);background:var(--naranja);display:inline-block;padding:3px 10px;margin-bottom:12px;}
+.red-name{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--cream);margin-bottom:3px;}
+.red-loc{font-size:12px;color:var(--mid);margin-bottom:14px;}
+.red-specs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.red-spec{font-family:'Space Mono',monospace;font-size:10px;color:var(--cream);padding:4px 10px;border:1px solid rgba(255,255,255,.07);border-radius:3px;transition:all .3s;}
+.red-spec:hover{border-color:var(--rosa);color:var(--rosa);}
+.red-cta{color:var(--rosa);text-decoration:none;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;transition:all .3s;position:relative;}
+.red-cta::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1px;background:var(--naranja);transition:width .4s;}
+.red-cta:hover::after{width:100%;}
+.red-cta:hover{color:var(--naranja);}
+.red-more{margin-top:14px;text-align:center;padding:18px;border:1px dashed rgba(255,45,123,.12);color:var(--mid);font-size:12px;line-height:1.5;}
+.red-more a{color:var(--naranja);text-decoration:none;transition:color .3s;}
+.red-more a:hover{color:var(--rosa);}
+
+/* ═══ VOCES ═══ */
+#voces{background:rgba(17,17,17,.92);}
+.voces-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;margin-top:28px;background:rgba(255,45,123,.04);}
+@media(max-width:768px){.voces-grid{grid-template-columns:1fr;}}
+.voz{background:rgba(17,17,17,.85);padding:24px;opacity:0;transform:translateY(14px);transition:all .5s cubic-bezier(.16,1,.3,1);position:relative;}
+.voz.vis{opacity:1;transform:translateY(0);}
+.voz::before{content:'"';position:absolute;top:12px;left:16px;font-family:'Syne',sans-serif;font-size:48px;font-weight:800;color:var(--rosa);opacity:.08;line-height:1;}
+.voz:hover{background:rgba(22,22,22,.9);}
+.voz p{font-size:14px;font-style:italic;line-height:1.55;color:var(--cream);margin-bottom:6px;}
+.voz small{font-family:'Space Mono',monospace;font-size:9px;color:var(--rosa);letter-spacing:.06em;}
+
+/* ═══ CONTACTO ═══ */
+#contacto{background:rgba(22,22,22,.9);position:relative;overflow:hidden;}
+.cta-glow{position:absolute;top:50%;left:50%;width:500px;height:500px;border-radius:50%;background:radial-gradient(ellipse,rgba(255,45,123,.04),transparent 60%);transform:translate(-50%,-50%);pointer-events:none;animation:ctaPulse 6s ease-in-out infinite alternate;}
+@keyframes ctaPulse{from{transform:translate(-50%,-50%) scale(.9);opacity:.3;}to{transform:translate(-50%,-50%) scale(1.1);opacity:.6;}}
+.cta-inner{text-align:center;position:relative;z-index:2;}
+.cta-inner .sec-tag{justify-content:center;}
+.cta-inner .sec-h{color:var(--cream);text-wrap:balance;}
+.cta-body{font-size:14px;line-height:1.8;color:var(--mid);max-width:440px;margin:0 auto 24px;}
+.cta-buttons{display:flex;flex-direction:column;align-items:center;gap:12px;}
+.btn-m{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;border-radius:3px;transition:all .35s cubic-bezier(.4,0,.2,1);text-decoration:none;position:relative;overflow:hidden;}
+.btn-m.primary{background:var(--rosa);color:var(--cream);border:1px solid var(--rosa);}
+.btn-m.primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,45,123,.3);}
+.btn-m.secondary{background:transparent;color:var(--naranja);border:1px solid rgba(255,107,43,.3);}
+.btn-m.secondary:hover{background:var(--naranja);color:var(--ink);transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,107,43,.2);}
+.cta-note{font-size:10px;color:#555;margin-top:12px;}
+.cta-sub{margin-top:20px;padding-top:14px;border-top:1px solid rgba(255,255,255,.04);}
+.cta-sub span{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--mid);display:block;margin-bottom:4px;}
+.cta-sub a{color:var(--cream);text-decoration:none;font-size:13px;font-weight:500;transition:color .3s;}
+.cta-sub a:hover{color:var(--rosa);}
+
+footer{background:rgba(10,10,10,.94);padding:24px;text-align:center;border-top:1px solid rgba(255,45,123,.06);position:relative;z-index:1;}
+.f-logo{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;letter-spacing:.08em;color:var(--cream);text-transform:uppercase;margin-bottom:4px;}
+.f-logo .ya{color:var(--naranja);}
+.f-copy{font-size:9px;color:#444;}
+
+@media(max-width:768px){
+  .hero-content{padding:0 20px;}
+  .si{padding:48px 20px;}
+  .stat-bar{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+
+<canvas id="gen-canvas"></canvas>
+<div id="progress"></div>
+
+<nav id="nav">
+  <a href="#" class="nav-brand">CASA<span class="ya">YA</span><span class="nav-badge">.homes</span></a>
+  <a href="mailto:info@casaya.homes" class="nav-cta">Contacto →</a>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="sec" id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grain"></div>
+  <div class="orbital">
+    <div class="orb-ring4"><span class="orb-dot od7"></span></div>
+    <div class="orb-ring"><span class="orb-dot od1"></span><span class="orb-dot od5"></span></div>
+    <div class="orb-ring2"><span class="orb-dot od2"></span><span class="orb-dot od4"></span><span class="orb-dot od6"></span></div>
+    <div class="orb-ring3"><span class="orb-dot od3"></span></div>
+    <div class="orb-core"></div>
+    <svg class="orb-icon" width="80" height="80" viewBox="0 0 48 48" fill="none">
+      <defs>
+        <filter id="houseGlow">
+          <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+        <linearGradient id="greenGrad" x1="4" y1="6" x2="44" y2="40">
+          <stop stop-color="#00D084"/>
+          <stop offset="1" stop-color="#00A86B"/>
+        </linearGradient>
+      </defs>
+      <g filter="url(#houseGlow)">
+        <!-- House body -->
+        <path d="M24 4L6 18h4v20h28V18h4L24 4z" fill="url(#greenGrad)" fill-opacity=".95" stroke="url(#greenGrad)" stroke-opacity=".9" stroke-width="1.2"/>
+        <!-- Windows row 1 -->
+        <rect x="9" y="18" width="5" height="5" fill="#00D084" opacity=".85" stroke="#00A86B" stroke-width=".8"/>
+        <rect x="11" y="20" width="1.5" height="1.5" fill="#00A86B" opacity=".6"/>
+        <rect x="13" y="20" width="1.5" height="1.5" fill="#00A86B" opacity=".6"/>
+        <rect x="11" y="22" width="1.5" height="1.5" fill="#00A86B" opacity=".6"/>
+        <rect x="13" y="22" width="1.5" height="1.5" fill="#00A86B" opacity=".6"/>
+
+        <rect x="19" y="18" width="5" height="5" fill="#00D084" opacity=".85" stroke="#00A86B" stroke-width=".8"/>
+        <rect x="21" y="20" width="1.5" height="1.5" fill="#00A86B" opacity=".6"/>
+        <rect x="23" y="20" width="1.5" height="1.5" fill="#00A86B" opacity=".6"/>
+        <rect x="21" y="22" width="1.5" height="1.5" fill="#00A86B" opacity=".6"/>
+        <rect x="23" y="22" width="1.5" height="1.5" fill="#00A86B" opacity=".6"/>
+
+        <rect x="29" y="18" width="5" height="5" fill="#00D084" opacity=".85" stroke="#00A86B" stroke-width=".8"/>
+        <rect x="31" y="20" width="1.5" height="1.5" fill="#00A86B" opacity=".6"/>
+        <rect x="33" y="20" width="1.5" height="1.5" fill="#00A86B" opacity=".6"/>
+        <rect x="31" y="22" width="1.5" height="1.5" fill="#00A86B" opacity=".6"/>
+        <rect x="33" y="22" width="1.5" height="1.5" fill="#00A86B" opacity=".6"/>
+
+        <!-- Door -->
+        <rect x="21" y="28" width="6" height="10" fill="#00A86B" opacity=".8" stroke="#008B5B" stroke-width=".8"/>
+        <circle cx="26.5" cy="33" r="1" fill="#00D084" opacity=".7"/>
+      </g>
+    </svg>
+  </div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Comercialización inmobiliaria inteligente</p>
+    <h1 class="hero-h1">No es casi.<br><em>Es ya.</em></h1>
+    <p class="hero-sub">
+      Integramos canal digital, datos y asesoría profesional a la comercialización inmobiliaria. 
+      Para desarrolladoras que quieren vender mejor. Para personas que merecen comprar mejor.
+    </p>
+    <div class="hero-cta-row">
+      <a href="#contacto" class="btn-p"><span>Integrar mi desarrollo →</span></a>
+      <a href="#integracion" class="btn-s">Explorar como comprador →</a>
+    </div>
+    <div class="stat-bar">
+      <div class="stat"><div class="stat-n" data-target="44" data-prefix="$" data-suffix="B">$0B</div><div class="stat-l">Mercado inmobiliario digital</div><div class="stat-src">Fortune BI 2026</div></div>
+      <div class="stat"><div class="stat-n" data-target="9.4" data-prefix="+" data-suffix="%" data-decimal="1">+0%</div><div class="stat-l">Plusvalía anual en México</div><div class="stat-src">BBVA Research</div></div>
+      <div class="stat"><div class="stat-n" data-target="16.7" data-prefix="$" data-suffix="B" data-decimal="1">$0B</div><div class="stat-l">Inversión tecnológica 2025</div><div class="stat-src">PwC / CRETI</div></div>
+      <div class="stat"><div class="stat-n" data-target="40" data-suffix="%">0%</div><div class="stat-l">Operaciones con IA en la región</div><div class="stat-src">Habi 2025</div></div>
+    </div>
+  </div>
+</section>
+<div class="gd"></div>
+
+<!-- ═══ TESIS ═══ -->
+<section class="sec" id="tesis">
+  <div class="si">
+    <p class="sec-tag reveal">Nuestra tesis</p>
+    <h2 class="sec-h reveal reveal-d1">La comercialización inmobiliaria<br>se quedó en el <em>siglo pasado.</em></h2>
+    <div class="tesis-grid">
+      <ul class="tesis-list">
+        <li>El 95% de las operaciones inmobiliarias en México siguen sin infraestructura digital.</li>
+        <li>Las desarrolladoras invierten en producto pero comercializan con herramientas de hace 20 años.</li>
+        <li>Los compradores toman la decisión financiera más importante de su vida con información incompleta.</li>
+        <li>Los asesores independientes operan sin datos, sin marca y sin respaldo tecnológico.</li>
+        <li>Mientras tanto, la tecnología inmobiliaria global ya mueve $44 mil millones y la inteligencia artificial transforma mercados enteros.</li>
+      </ul>
+      <div class="tesis-answer reveal reveal-d2">
+        <strong>Creemos que la tecnología debe servir a las personas, no reemplazarlas.</strong>
+        <p>No somos un portal de listados. No somos un mercado digital. Somos la capa de inteligencia, canal y profesionalización que conecta a desarrolladoras con compradores — a través de asesores equipados con las herramientas que el mercado necesita.</p>
+        <p>Pensamos como plataforma. Operamos como personas.</p>
+      </div>
+    </div>
+  </div>
+  <div class="pull-quote">
+    <p>"La tecnología inmobiliaria puede desempeñar un rol fundamental en América Latina para facilitar el acceso a la vivienda."</p>
+    <small>Banco Interamericano de Desarrollo (BID)</small>
+  </div>
+</section>
+<div class="gd"></div>
+
+<!-- ═══ DIFERENCIADORES ═══ -->
+<section class="sec" id="dif">
+  <div class="si">
+    <p class="sec-tag reveal">Qué nos hace diferentes</p>
+    <h2 class="sec-h reveal reveal-d1" style="color:var(--cream)">No vendemos horas.<br>Integramos <em>resultados.</em></h2>
+    <div class="dif-grid reveal">
+      <div class="dif-card"><div class="dif-n">01</div><h3>Embudo digital por desarrollo</h3><p>Cada proyecto tiene su propia página, diagnóstico de crédito, captura de prospectos con origen rastreable y seguimiento documentado. No es publicar en redes — es infraestructura de conversión.</p></div>
+      <div class="dif-card"><div class="dif-n">02</div><h3>Trazabilidad completa</h3><p>Cada prospecto tiene fecha, hora, origen y canal registrado. Reportes transparentes, sin disputas de atribución. Tu inversión es medible desde el primer día.</p></div>
+      <div class="dif-card"><div class="dif-n">03</div><h3>Asesores equipados, no improvisados</h3><p>Cada asesor opera con marca profesional, herramientas digitales, guiones probados y métricas de conversión. Profesionalización real del canal humano.</p></div>
+      <div class="dif-card"><div class="dif-n">04</div><h3>Contenido que convierte</h3><p>Producimos el material: videos cortos, historias, textos, cuestionarios interactivos. El sistema genera el contenido — no dependemos de la creatividad individual.</p></div>
+      <div class="dif-card"><div class="dif-n">05</div><h3>Multisegmento, multiproducto</h3><p>Nuestra arquitectura soporta desde vivienda social hasta desarrollos de alto nivel. Un subdominio por proyecto, una marca paraguas que respalda todo.</p></div>
+      <div class="dif-card"><div class="dif-n">06</div><h3>Decisiones con datos, cierre con personas</h3><p>Usamos datos para detectar qué funciona. Usamos personas para cerrar. La tecnología potencia al asesor — no lo sustituye.</p></div>
+    </div>
+  </div>
+</section>
+<div class="gd"></div>
+
+<!-- ═══ INTEGRACIÓN ═══ -->
+<section class="sec" id="integracion">
+  <div class="si">
+    <p class="sec-tag reveal">Para quién es CASAYA</p>
+    <h2 class="sec-h reveal reveal-d1">Tres perfiles,<br>un mismo <em>ecosistema.</em></h2>
+    <div class="int-grid">
+      <div class="int-card dev reveal reveal-d1"><div class="int-aud dev">Desarrolladoras</div><h3>Integramos canal digital a tu operación</h3><p>Tu inventario llega a compradores precalificados a través de embudos propios, asesores profesionales y reportes de conversión. Somos tu brazo de comercialización con infraestructura propia.</p></div>
+      <div class="int-card buy reveal reveal-d2"><div class="int-aud buy">Compradores</div><h3>Información real para decidir bien</h3><p>Desarrollos verificados, herramientas de precalificación crediticia y una asesora que te acompaña de principio a fin. Sin presión, sin opacidad, sin sorpresas.</p></div>
+      <div class="int-card net reveal reveal-d3"><div class="int-aud net">Asesores</div><h3>Únete a una red con herramientas reales</h3><p>Marca profesional, página propia, contenido listo para publicar y un flujo de prospectos constante. Tú cierras — nosotros te equipamos.</p></div>
+      <div class="int-card dev reveal reveal-d4"><div class="int-aud dev">Desarrolladoras</div><h3>Retorno demostrable</h3><p>No pedimos actos de fe. Cada peso que inviertes en nuestra red se traduce en métricas: prospectos, visitas agendadas, conversiones. Datos, no promesas.</p></div>
+    </div>
+  </div>
+</section>
+<div class="gd"></div>
+
+<!-- ═══ PROCESO ═══ -->
+<section class="sec" id="proceso">
+  <div class="si">
+    <p class="sec-tag reveal">Cómo opera</p>
+    <h2 class="sec-h reveal reveal-d1">Simple por fuera.<br>Robusto <em>por dentro.</em></h2>
+    <div class="proc-tabs reveal reveal-d2">
+      <button class="proc-tab on" onclick="showProc(0)">Desarrolladoras</button>
+      <button class="proc-tab" onclick="showProc(1)">Compradores</button>
+    </div>
+    <div class="proc-flow vis" id="proc0">
+      <div class="steps-v">
+        <div class="step-v reveal"><div class="step-left"><div class="step-num alt">01</div><div class="step-conn alt"></div></div><div class="step-right"><h3>Evaluación de compatibilidad</h3><p>Revisamos tu desarrollo: producto, ubicación, esquemas de crédito, diferenciadores. Si hay alineación, avanzamos.</p></div></div>
+        <div class="step-v reveal"><div class="step-left"><div class="step-num alt">02</div><div class="step-conn alt"></div></div><div class="step-right"><h3>Configuración digital</h3><p>Creamos la infraestructura: página dedicada, diagnóstico de crédito, contenido para redes, integración al sistema de captura.</p></div></div>
+        <div class="step-v reveal"><div class="step-left"><div class="step-num alt">03</div><div class="step-conn alt"></div></div><div class="step-right"><h3>Activación de canal</h3><p>Asesores capacitados con tu producto. Embudo activo generando prospectos precalificados con origen y registro.</p></div></div>
+        <div class="step-v reveal"><div class="step-left"><div class="step-num alt">04</div><div class="step-conn alt" style="background:transparent"></div></div><div class="step-right"><h3>Reportes y optimización</h3><p>Métricas de conversión por etapa. Ajustamos mensaje, canal y segmentación con base en datos reales.</p></div></div>
+      </div>
+    </div>
+    <div class="proc-flow" id="proc1">
+      <div class="steps-v">
+        <div class="step-v reveal"><div class="step-left"><div class="step-num">01</div><div class="step-conn"></div></div><div class="step-right"><h3>Explora</h3><p>Conoce los desarrollos en nuestra red. Cada uno tiene información verificada: ubicación, producto, opciones de financiamiento.</p></div></div>
+        <div class="step-v reveal"><div class="step-left"><div class="step-num">02</div><div class="step-conn"></div></div><div class="step-right"><h3>Conecta</h3><p>Una asesora profesional te contacta para entender tu situación y presentarte opciones reales. Sin compromiso.</p></div></div>
+        <div class="step-v reveal"><div class="step-left"><div class="step-num">03</div><div class="step-conn"></div></div><div class="step-right"><h3>Visita</h3><p>Coordinamos tu visita al desarrollo. Te acompañamos, resolvemos dudas y te damos espacio para decidir.</p></div></div>
+        <div class="step-v reveal"><div class="step-left"><div class="step-num">04</div><div class="step-conn" style="background:transparent"></div></div><div class="step-right"><h3>Cierra</h3><p>Acompañamiento completo en documentación, financiamiento y escrituración. Hasta las llaves.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="gd"></div>
+
+<!-- ═══ RED ═══ -->
+<section class="sec" id="red">
+  <div class="si">
+    <p class="sec-tag reveal">Nuestra red</p>
+    <h2 class="sec-h reveal reveal-d1" style="color:var(--cream)">Desarrollos <em>integrados.</em></h2>
+    <div class="red-featured reveal reveal-d2">
+      <div class="red-badge">Activo</div>
+      <div class="red-name">Modelo Sicilia Plus</div>
+      <div class="red-loc">Atotonilco de Tula, Hidalgo — Zona Metropolitana del Valle de México</div>
+      <div class="red-specs">
+        <span class="red-spec">48 m²</span>
+        <span class="red-spec">2 Recámaras</span>
+        <span class="red-spec">Financiamiento INFONAVIT</span>
+        <span class="red-spec">Entrega inmediata</span>
+      </div>
+      <a href="https://vane.casaya.homes" class="red-cta" target="_blank">Conocer este desarrollo →</a>
+    </div>
+    <div class="red-more reveal reveal-d3">
+      ¿Tienes un desarrollo que necesita canal digital? → <a href="mailto:desarrollos@casaya.homes">desarrollos@casaya.homes</a>
+    </div>
+  </div>
+</section>
+<div class="gd"></div>
+
+<!-- ═══ VOCES ═══ -->
+<section class="sec" id="voces">
+  <div class="si">
+    <p class="sec-tag reveal">Lo que dicen</p>
+    <h2 class="sec-h reveal reveal-d1" style="color:var(--cream)">Familias que ya<br><em>dieron el paso.</em></h2>
+    <div class="voces-grid">
+      <div class="voz"><p>"Nos explicaron todo el proceso de financiamiento paso a paso. Nunca nos sentimos presionados."</p><small>Familia · Cuautitlán Izcalli</small></div>
+      <div class="voz"><p>"Yo no confiaba en asesores. Aquí fue diferente — todo quedó registrado, todo fue claro."</p><small>Comprador · Tepeji del Río</small></div>
+      <div class="voz"><p>"Nos dieron información real, nos dejaron pensarlo y cuando decidimos, nos acompañaron."</p><small>Familia · Huehuetoca</small></div>
+      <div class="voz"><p>"En dos meses ya estábamos firmando. Pensé que iba a tardar un año."</p><small>Compradora · Tula de Allende</small></div>
+    </div>
+  </div>
+</section>
+<div class="gd"></div>
+
+<!-- ═══ CONTACTO ═══ -->
+<section class="sec" id="contacto">
+  <div class="si">
+    <div class="cta-glow"></div>
+    <div class="cta-inner">
+      <p class="sec-tag reveal">Conversemos</p>
+      <h2 class="sec-h reveal reveal-d1">¿Listo para integrar tu desarrollo a <em>la red?</em></h2>
+      <p class="cta-body reveal reveal-d2">
+        Desarrolladoras: cuéntanos de tu proyecto.<br>
+        Compradores: te conectamos con una asesora.<br>
+        Asesores: conoce cómo sumarte.
+      </p>
+      <div class="cta-buttons reveal reveal-d3">
+        <a href="mailto:desarrollos@casaya.homes" class="btn-m primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-6 9 6v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+          desarrollos@casaya.homes
+        </a>
+        <a href="mailto:info@casaya.homes" class="btn-m secondary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          info@casaya.homes
+        </a>
+      </div>
+      <p class="cta-note reveal reveal-d4">Respondemos en menos de 24 horas.</p>
+      <div class="cta-sub reveal reveal-d4">
+        <span>¿Buscas asesoría directa para comprar?</span>
+        <a href="https://vane.casaya.homes" target="_blank">Visitar vane.casaya.homes →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="f-logo">CASA<span class="ya">YA</span></div>
+  <p class="f-copy">© 2026 CASAYA · Comercialización inmobiliaria inteligente · México</p>
+  <p style="margin-top:10px;font-size:10px;opacity:0.4;letter-spacing:.05em;">Este sitio no recopila datos personales mediante formularios. La tipografía se carga via Google Fonts (fonts.googleapis.com), lo que puede implicar el registro de tu IP por parte de Google conforme a sus <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" style="color:inherit;">políticas de privacidad</a>. · <a href="mailto:info@casaya.homes" style="color:inherit;">info@casaya.homes</a></p>
+</footer>
+
+<!-- AXIS CONNECTOR -->
+<script src="connector.js"></script>
+<script>
+  AxisConnector.init({
+    apiKey: '93f9a45054b0724153c6ff9acaf5a9deed460ed5eed08eb4c9e40831bbbf14c6',
+    projectId: 'b3925056-c2b8-4c74-8dc3-270a1f367623'
+  });
+</script>
+
+<script>
+// SCROLL
+window.addEventListener('scroll',()=>{
+  const h=document.documentElement.scrollHeight-window.innerHeight;
+  document.getElementById('progress').style.width=(window.scrollY/h*100)+'%';
+  document.getElementById('nav').classList.toggle('scrolled',window.scrollY>60);
+});
+
+// REVEAL
+const obs=new IntersectionObserver(e=>{e.forEach(el=>{if(el.isIntersecting)el.target.classList.add('vis');});},{threshold:.1});
+document.querySelectorAll('.reveal,.sec-tag').forEach(el=>obs.observe(el));
+
+// STAGGER: tesis list
+const listObs=new IntersectionObserver(e=>{e.forEach(el=>{if(el.isIntersecting){el.target.querySelectorAll('.tesis-list li').forEach((li,i)=>setTimeout(()=>li.classList.add('vis'),i*100));listObs.unobserve(el.target);}});},{threshold:.1});
+const tl=document.querySelector('.tesis-list');if(tl)listObs.observe(tl.parentElement||tl);
+
+// STAGGER: grids
+const gridObs=new IntersectionObserver(e=>{e.forEach(el=>{if(el.isIntersecting){el.target.querySelectorAll('.dif-card,.int-card,.voz').forEach((c,i)=>setTimeout(()=>c.classList.add('vis'),i*80));gridObs.unobserve(el.target);}});},{threshold:.05});
+document.querySelectorAll('.dif-grid,.int-grid,.voces-grid').forEach(g=>gridObs.observe(g));
+
+// ANIMATED COUNTERS
+const counterObs=new IntersectionObserver(e=>{e.forEach(entry=>{if(entry.isIntersecting){
+  entry.target.querySelectorAll('.stat-n[data-target]').forEach(el=>{
+    const target=parseFloat(el.dataset.target);
+    const prefix=el.dataset.prefix||'';
+    const suffix=el.dataset.suffix||'';
+    const dec=parseInt(el.dataset.decimal)||0;
+    const duration=1200;
+    const start=performance.now();
+    function tick(now){
+      const t=Math.min((now-start)/duration,1);
+      const ease=1-Math.pow(1-t,3);
+      const val=(target*ease).toFixed(dec);
+      el.textContent=prefix+val+suffix;
+      if(t<1)requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  });
+  counterObs.unobserve(entry.target);
+}});},{threshold:.3});
+const sb=document.querySelector('.stat-bar');if(sb)counterObs.observe(sb);
+
+// PROCESS TABS
+function showProc(n){
+  document.querySelectorAll('.proc-flow').forEach(f=>f.classList.remove('vis'));
+  document.querySelectorAll('.proc-tab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('proc'+n).classList.add('vis');
+  document.querySelectorAll('.proc-tab')[n].classList.add('on');
+  document.getElementById('proc'+n).querySelectorAll('.reveal').forEach(el=>{
+    el.classList.remove('vis');setTimeout(()=>obs.observe(el),50);
+  });
+}
+
+// ═══════════════════════════════════════════
+// GENERATIVE CANVAS — flowing lines + shapes
+// ═══════════════════════════════════════════
+(function(){
+  const C=document.getElementById('gen-canvas');
+  const ctx=C.getContext('2d');
+  let W,H,scrollY=0,t=0;
+  const lines=[];
+  const shapes=[];
+
+  function resize(){
+    W=C.width=window.innerWidth;
+    H=C.height=window.innerHeight;
+  }
+  window.addEventListener('resize',resize);
+  resize();
+
+  window.addEventListener('scroll',()=>{scrollY=window.scrollY;},{passive:true});
+
+  // Detect if current scroll is over a light section
+  const lightSections=['tesis','integracion','proceso'];
+  function isLight(){
+    for(const id of lightSections){
+      const el=document.getElementById(id);
+      if(!el)continue;
+      const r=el.getBoundingClientRect();
+      if(r.top<H*.6&&r.bottom>H*.4)return true;
+    }
+    return false;
+  }
+
+  // Create flowing curves
+  const NUM_LINES=10;
+  for(let i=0;i<NUM_LINES;i++){
+    lines.push({
+      phase:Math.random()*Math.PI*2,
+      speed:.0003+Math.random()*.0005,
+      amp:60+Math.random()*140,
+      yBase:.05+Math.random()*.9,
+      freq:1.2+Math.random()*2.5,
+      width:.3+Math.random()*1,
+      colorIdx:i%3,
+      drift:Math.random()*200-100
+    });
+  }
+
+  // Create geometric shapes
+  const NUM_SHAPES=18;
+  for(let i=0;i<NUM_SHAPES;i++){
+    shapes.push({
+      x:Math.random()*1.2-.1,
+      y:Math.random()*1.2-.1,
+      size:15+Math.random()*70,
+      rotation:Math.random()*Math.PI*2,
+      rotSpeed:.0002+Math.random()*.0008*(Math.random()>.5?1:-1),
+      type:Math.floor(Math.random()*4),// 0=line, 1=angle, 2=rect, 3=arc
+      width:.3+Math.random()*.6,
+      colorIdx:i%3,
+      parallax:.15+Math.random()*.7,
+      phase:Math.random()*Math.PI*2,
+      floatSpeed:.001+Math.random()*.002
+    });
+  }
+
+  const darkColors=[
+    [255,45,123],  // rosa
+    [255,107,43],  // naranja
+    [255,186,8]    // ambar
+  ];
+  const lightColors=[
+    [160,70,40],   // terracota oscuro
+    [140,60,30],   // cobre profundo
+    [180,90,50]    // arcilla cálida
+  ];
+
+  function getColor(idx,alpha,light){
+    const c=light?lightColors[idx]:darkColors[idx];
+    return `rgba(${c[0]},${c[1]},${c[2]},${alpha})`;
+  }
+
+  function drawLine(line,light){
+    const scrollOffset=scrollY*0.15;
+    const y0=line.yBase*H;
+    ctx.beginPath();
+    ctx.lineWidth=light?line.width*2.5:line.width;
+    const baseAlpha=light?0.22:0.06;
+    ctx.strokeStyle=getColor(line.colorIdx,baseAlpha+Math.sin(t*line.speed*5)*.06,light);
+
+    for(let x=0;x<=W;x+=3){
+      const normalX=x/W;
+      const wave=Math.sin(normalX*line.freq*Math.PI+t*line.speed*1000+line.phase)*line.amp;
+      const drift=Math.sin(t*line.speed*500+line.phase)*line.drift;
+      const scrollWave=Math.sin((normalX+scrollOffset*.001)*2)*scrollOffset*.05;
+      const y=y0+wave+drift+scrollWave;
+      if(x===0)ctx.moveTo(x,y);
+      else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+
+  function drawShape(shape,light){
+    const scrollOffset=scrollY*shape.parallax;
+    const floatY=Math.sin(t*shape.floatSpeed+shape.phase)*15;
+    const x=shape.x*W;
+    const y=shape.y*H-scrollOffset*.08+floatY;
+
+    if(y<-100||y>H+100)return;
+
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.rotate(shape.rotation+t*shape.rotSpeed);
+
+    const baseAlpha=light?0.2:0.06;
+    const alpha=baseAlpha+Math.sin(t*shape.floatSpeed*3+shape.phase)*.06;
+    ctx.strokeStyle=getColor(shape.colorIdx,alpha,light);
+    ctx.lineWidth=light?shape.width*2.5:shape.width;
+    const s=shape.size*(light?1.3:1);
+
+    if(shape.type===0){
+      // thin line
+      ctx.beginPath();
+      ctx.moveTo(-s/2,0);
+      ctx.lineTo(s/2,0);
+      ctx.stroke();
+    }else if(shape.type===1){
+      // angle / chevron
+      ctx.beginPath();
+      ctx.moveTo(-s/2,s/4);
+      ctx.lineTo(0,-s/4);
+      ctx.lineTo(s/2,s/4);
+      ctx.stroke();
+    }else if(shape.type===2){
+      // thin rectangle (no fill)
+      ctx.strokeRect(-s/2,-s/6,s,s/3);
+    }else{
+      // arc
+      ctx.beginPath();
+      ctx.arc(0,0,s/2,0,Math.PI*1.3);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function frame(now){
+    t=now;
+    ctx.clearRect(0,0,W,H);
+    const light=isLight();
+
+    // Draw flowing curves
+    for(const line of lines)drawLine(line,light);
+
+    // Draw geometric shapes
+    for(const shape of shapes)drawShape(shape,light);
+
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+
+</body>
+</html>

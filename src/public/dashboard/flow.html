@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Axis Flow Canvas 🧬 — Torre de Visión</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        :root {
+            --ink: #0A0A0A;
+            --cream: #FFF8F0;
+            --rosa: #FF2D7B;
+            --naranja: #FF6B2B;
+            --char: #111;
+            --glass: rgba(255, 255, 255, 0.03);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--ink);
+            color: var(--cream);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            padding: 20px 40px;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass);
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 24px;
+            background: linear-gradient(135deg, var(--rosa), var(--naranja));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        #flow-container {
+            flex-grow: 1;
+            width: 100%;
+            height: 100%;
+        }
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10;
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            background: var(--char);
+            border: 1px solid var(--glass);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn:hover { background: #222; }
+        .auth-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--ink);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .auth-card {
+            background: var(--char);
+            padding: 40px;
+            border-radius: 12px;
+            width: 400px;
+            text-align: center;
+        }
+        input {
+            width: 100%;
+            background: #000;
+            border: 1px solid #333;
+            color: white;
+            padding: 12px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div id="auth-overlay" class="auth-overlay">
+        <div class="auth-card">
+            <h1>Acceso al Búnker 🔑</h1>
+            <p style="color:#888; margin-top:10px;">Ingresa tu API Key Maestra para visualizar el ecosistema.</p>
+            <input type="password" id="api-key" placeholder="93f9a45054b07241...">
+            <button class="btn" style="background:var(--rosa); width:100%;" onclick="initFlow()">Visualizar Flujo</button>
+        </div>
+    </div>
+
+    <header id="main-header" class="hidden">
+        <div>
+            <h1>Axis Flow Canvas 🧬</h1>
+            <p style="color:#888; font-size:12px;">Mmothership & X-Wings Control Map</p>
+        </div>
+        <div style="text-align: right;">
+            <div id="status-pulse" style="width:10px; height:10px; background: #0f0; border-radius:50%; display:inline-block; box-shadow: 0 0 10px #0f0;"></div>
+            <span style="font-size:12px; margin-left:8px; color:#0f0;">ONLINE</span>
+        </div>
+    </header>
+
+    <div id="flow-container"></div>
+
+    <div class="controls hidden" id="controls">
+        <button class="btn" onclick="network.fit()">Ajustar Vista</button>
+        <button class="btn" onclick="loadFlow()">Recargar Grafo</button>
+    </div>
+
+    <script>
+        let network;
+        let apiKey;
+
+        async function initFlow() {
+            apiKey = document.getElementById('api-key').value;
+            if (!apiKey) return alert('Ingresa tu API Key');
+            
+            document.getElementById('auth-overlay').classList.add('hidden');
+            document.getElementById('main-header').classList.remove('hidden');
+            document.getElementById('controls').classList.remove('hidden');
+            
+            await loadFlow();
+        }
+
+        async function loadFlow() {
+            try {
+                const response = await fetch('/flow', {
+                    headers: { 'x-api-key': apiKey }
+                });
+
+                if (!response.ok) throw new Error('Llave inválida o error del búnker');
+
+                const data = await response.json();
+                
+                // Formatear nodos para vis-network
+                const nodes = new vis.DataSet(data.nodes.map(n => ({
+                    ...n,
+                    font: { color: '#FFF8F0', size: 14, face: 'Outfit' },
+                    shape: 'dot',
+                    size: 20,
+                    color: getGroupColor(n.group),
+                    shadow: { enabled: true, color: 'rgba(0,0,0,0.5)' }
+                })));
+
+                const edges = new vis.DataSet(data.edges.map(e => ({
+                    ...e,
+                    color: { color: '#444', highlight: '#FF2D7B' },
+                    width: 2,
+                    smooth: { type: 'cubicBezier' }
+                })));
+
+                const container = document.getElementById('flow-container');
+                const options = {
+                    layout: {
+                        hierarchical: {
+                            direction: 'LR',
+                            sortMethod: 'directed',
+                            levelSeparation: 250,
+                            nodeSpacing: 150
+                        }
+                    },
+                    physics: {
+                        enabled: true,
+                        hierarchicalRepulsion: { nodeDistance: 200 }
+                    },
+                    interaction: { hover: true }
+                };
+
+                network = new vis.Network(container, { nodes, edges }, options);
+
+                // Efecto de pulso en las conexiones (Simulación de vida)
+                setInterval(() => {
+                    const randomEdgeId = Math.floor(Math.random() * data.edges.length);
+                    // Aquí podríamos animar un "pulso" real si tuviéramos eventos
+                }, 2000);
+
+            } catch (err) {
+                alert(err.message);
+                document.getElementById('auth-overlay').classList.remove('hidden');
+            }
+        }
+
+        function getGroupColor(group) {
+            switch(group) {
+                case 'wing': return '#FF6B2B'; // Naranja
+                case 'sensor': return '#FF2D7B'; // Rosa
+                case 'core': return '#00D1FF'; // Azul
+                case 'storage': return '#8E44AD'; // Púrpura
+                case 'ai': return '#F1C40F'; // Amarillo
+                case 'worker': return '#2ECC71'; // Verde
+                case 'effector': return '#E67E22'; // Bronce
+                case 'vision': return '#FFFFFF'; // Blanco
+                default: return '#555';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://casaya.homes/sitemap.xml
