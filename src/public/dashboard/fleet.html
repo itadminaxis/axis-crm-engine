@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Axis — Centro de Mando</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:     #0A0A0A;
+      --char:    #111;
+      --panel:   #161616;
+      --border:  rgba(255,255,255,0.06);
+      --cream:   #FFF8F0;
+      --muted:   #888;
+      --rosa:    #FF2D7B;
+      --naranja: #FF6B2B;
+      /* COLORIMETRIA DE NIVELES */
+      --self:       #2ECC71;
+      --managed:    #00D1FF;
+      --hosted:     #FF6B2B;
+      --reseller:   #8E44AD;
+      --contractor: #F1C40F;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--ink);
+      color: var(--cream);
+      min-height: 100vh;
+    }
+
+    /* ── AUTH ── */
+    #auth-screen {
+      position: fixed; inset: 0;
+      background: var(--ink);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 999;
+    }
+    .auth-card {
+      background: var(--char);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 48px 40px;
+      width: 420px;
+      text-align: center;
+    }
+    .auth-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 28px; font-weight: 800;
+      background: linear-gradient(135deg, var(--rosa), var(--naranja));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+    .auth-sub { color: var(--muted); font-size: 13px; margin-bottom: 32px; }
+    .auth-field {
+      width: 100%; background: #0a0a0a; border: 1px solid #2a2a2a;
+      border-radius: 8px; color: var(--cream); padding: 12px 14px;
+      font-family: 'Outfit'; font-size: 14px; margin-bottom: 12px;
+    }
+    .auth-field:focus { outline: none; border-color: var(--rosa); }
+    .auth-field::placeholder { color: #444; }
+    .auth-btn {
+      width: 100%; padding: 13px; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, var(--rosa), var(--naranja));
+      color: #fff; font-family: 'Outfit'; font-size: 15px; font-weight: 600;
+      cursor: pointer; margin-top: 8px;
+    }
+    .auth-btn:hover { opacity: .85; }
+    .auth-err { color: #FF3D00; font-size: 13px; margin-top: 12px; min-height: 18px; }
+
+    /* ── LAYOUT ── */
+    #app { display: none; }
+    header {
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(10,10,10,.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .logo {
+      font-family: 'Syne'; font-size: 20px;
+      background: linear-gradient(135deg, var(--rosa), var(--naranja));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .header-right { display: flex; align-items: center; gap: 14px; }
+    .btn-sm {
+      font-size: 12px; color: var(--muted); cursor: pointer;
+      border: 1px solid #2a2a2a; border-radius: 6px; padding: 5px 12px;
+      background: none; font-family: 'Outfit';
+    }
+    .btn-sm:hover { border-color: var(--rosa); color: var(--rosa); }
+
+    .main { max-width: 1200px; margin: 0 auto; padding: 28px 24px 60px; }
+
+    /* ── GUIDE SECTION ── */
+    .guide-banner {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 14px; padding: 28px 30px; margin-bottom: 28px;
+    }
+    .guide-title {
+      font-family: 'Syne'; font-size: 22px; font-weight: 800; margin-bottom: 14px;
+    }
+    .guide-steps {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;
+    }
+    .guide-step {
+      display: flex; align-items: flex-start; gap: 12px;
+      background: #1a1a1a; border-radius: 10px; padding: 16px;
+    }
+    .step-num {
+      font-family: 'Syne'; font-size: 24px; font-weight: 800;
+      color: var(--rosa); flex-shrink: 0; line-height: 1;
+    }
+    .step-text { font-size: 13px; color: var(--cream); line-height: 1.5; }
+    .step-text strong { color: var(--naranja); }
+
+    /* ── ACTION BUTTONS ── */
+    .actions-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px; margin-bottom: 28px;
+    }
+    .action-card {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 14px; padding: 24px; cursor: pointer;
+      transition: border-color .2s, transform .15s;
+      position: relative; overflow: hidden;
+    }
+    .action-card:hover { transform: translateY(-2px); }
+    .action-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+    .action-card.onboard::before { background: var(--managed); }
+    .action-card.onboard:hover { border-color: var(--managed); }
+    .action-card.fleet::before { background: var(--self); }
+    .action-card.fleet:hover { border-color: var(--self); }
+    .action-card.metrics::before { background: var(--rosa); }
+    .action-card.metrics:hover { border-color: var(--rosa); }
+    .action-card.levels::before { background: var(--reseller); }
+    .action-card.levels:hover { border-color: var(--reseller); }
+
+    .action-icon { font-size: 28px; margin-bottom: 10px; }
+    .action-title { font-family: 'Syne'; font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+    .action-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    /* ── MODAL / PANELS ── */
+    .modal-bg {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.75); z-index: 100;
+      justify-content: center; align-items: center;
+    }
+    .modal-bg.active { display: flex; }
+    .modal {
+      background: var(--char); border: 1px solid var(--border);
+      border-radius: 16px; padding: 36px; width: 520px; max-width: 95vw;
+      max-height: 85vh; overflow-y: auto;
+    }
+    .modal-title {
+      font-family: 'Syne'; font-size: 20px; font-weight: 800; margin-bottom: 20px;
+    }
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      font-size: 12px; color: var(--muted); text-transform: uppercase;
+      letter-spacing: .06em; margin-bottom: 6px; display: block;
+    }
+    .form-input {
+      width: 100%; background: #0a0a0a; border: 1px solid #2a2a2a;
+      border-radius: 8px; color: var(--cream); padding: 11px 14px;
+      font-family: 'Outfit'; font-size: 14px;
+    }
+    .form-input:focus { outline: none; border-color: var(--managed); }
+
+    /* ── LEVEL SELECTOR ── */
+    .level-options { display: flex; flex-direction: column; gap: 10px; }
+    .level-option {
+      display: flex; align-items: center; gap: 14px;
+      background: #1a1a1a; border: 2px solid transparent;
+      border-radius: 10px; padding: 14px 16px; cursor: pointer;
+      transition: border-color .2s;
+    }
+    .level-option:hover { border-color: #333; }
+    .level-option.selected { border-color: var(--selected-color, #fff); }
+    .level-dot {
+      width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
+    }
+    .level-info { flex: 1; }
+    .level-name { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+    .level-desc { font-size: 12px; color: var(--muted); }
+
+    .submit-btn {
+      width: 100%; padding: 13px; border: none; border-radius: 8px;
+      color: #fff; font-family: 'Outfit'; font-size: 15px; font-weight: 600;
+      cursor: pointer; margin-top: 10px;
+    }
+    .submit-btn:hover { opacity: .85; }
+    .submit-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    .close-btn {
+      position: absolute; top: 16px; right: 18px;
+      background: none; border: none; color: var(--muted); font-size: 20px;
+      cursor: pointer;
+    }
+
+    /* ── FLEET TABLE ── */
+    .fleet-section { margin-top: 28px; }
+    .section-title {
+      font-family: 'Syne'; font-size: 16px; font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .fleet-cards { display: flex; flex-direction: column; gap: 12px; }
+    .fleet-card {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 12px; padding: 18px 22px;
+      display: flex; align-items: center; gap: 16px;
+      border-left: 4px solid;
+    }
+    .fleet-card .fc-dot {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne'; font-weight: 800; font-size: 16px; color: #000;
+      flex-shrink: 0;
+    }
+    .fc-info { flex: 1; }
+    .fc-name { font-weight: 700; font-size: 15px; margin-bottom: 2px; }
+    .fc-level { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+    .fc-stats { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .fc-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .fc-btn {
+      font-size: 11px; padding: 5px 10px; border-radius: 6px;
+      border: 1px solid #2a2a2a; background: none; color: var(--cream);
+      cursor: pointer; font-family: 'Outfit';
+    }
+    .fc-btn:hover { border-color: var(--managed); color: var(--managed); }
+
+    /* ── RESULT PANEL ── */
+    .result-panel {
+      display: none; background: #0d1f0d; border: 1px solid #1a3a1a;
+      border-radius: 12px; padding: 20px; margin-top: 16px;
+    }
+    .result-panel.active { display: block; }
+    .result-panel.error { background: #1f0d0d; border-color: #3a1a1a; }
+    .result-title { font-weight: 700; font-size: 14px; margin-bottom: 10px; color: var(--self); }
+    .result-panel.error .result-title { color: #FF3D00; }
+    pre.result-code {
+      background: #000; border-radius: 8px; padding: 14px;
+      font-size: 12px; color: var(--cream); overflow-x: auto;
+      white-space: pre-wrap; word-break: break-all;
+    }
+
+    /* ── COLORIMETRY GUIDE ── */
+    .color-guide {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px; margin-bottom: 28px;
+    }
+    .color-card {
+      border-radius: 12px; padding: 18px; border-left: 5px solid;
+      background: var(--panel);
+    }
+    .cc-name { font-family: 'Syne'; font-weight: 800; font-size: 15px; margin-bottom: 4px; }
+    .cc-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+    .cc-access { font-size: 11px; margin-top: 8px; padding: 4px 8px; border-radius: 4px; display: inline-block; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: #1a1a1a; border: 1px solid var(--self);
+      border-radius: 10px; padding: 14px 20px; z-index: 200;
+      font-size: 13px; color: var(--cream); display: none;
+      animation: slideUp .3s ease;
+    }
+    .toast.active { display: block; }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .empty-state {
+      text-align: center; padding: 40px; color: var(--muted); font-size: 14px;
+    }
+
+    .copy-btn {
+      font-size: 11px; padding: 3px 8px; border-radius: 4px;
+      border: 1px solid #333; background: none; color: var(--muted);
+      cursor: pointer; font-family: 'Outfit'; margin-left: 6px;
+    }
+    .copy-btn:hover { color: var(--cream); border-color: var(--cream); }
+  </style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">AXIS</div>
+    <div class="auth-sub">Centro de Mando — Tu panel de control</div>
+    <input class="auth-field" type="text" id="inp-base" value="https://attractive-mindfulness-production.up.railway.app" placeholder="URL del servidor">
+    <input class="auth-field" type="password" id="inp-apikey" placeholder="Tu API Key de admin">
+    <button class="auth-btn" onclick="doLogin()">Entrar</button>
+    <div class="auth-err" id="auth-err"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="logo">AXIS — Centro de Mando</div>
+    <div class="header-right">
+      <button class="btn-sm" onclick="loadFleet()">Refrescar</button>
+      <button class="btn-sm" onclick="doLogout()">Salir</button>
+    </div>
+  </header>
+
+  <div class="main">
+
+    <!-- GUIA RAPIDA -->
+    <div class="guide-banner">
+      <div class="guide-title">Te llego un cliente nuevo? Sigue estos pasos:</div>
+      <div class="guide-steps">
+        <div class="guide-step">
+          <div class="step-num">1</div>
+          <div class="step-text">Click en <strong>Dar de Alta Cliente</strong> abajo. Ponle nombre y elige el nivel de acceso.</div>
+        </div>
+        <div class="guide-step">
+          <div class="step-num">2</div>
+          <div class="step-text">Te da un <strong>public_token</strong>. Con eso conectas Meta Ads, Zapier, o cualquier fuente.</div>
+        </div>
+        <div class="guide-step">
+          <div class="step-num">3</div>
+          <div class="step-text">Los leads caen solos. Tu los ves desde <strong>Ver su Flota</strong> o el Dashboard de Metricas.</div>
+        </div>
+        <div class="guide-step">
+          <div class="step-num">4</div>
+          <div class="step-text">Para conectar Meta: Zapier > Meta Lead Ads > POST a <strong>/api/submit?token=SU_TOKEN</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTONES DE ACCION -->
+    <div class="actions-grid">
+      <div class="action-card onboard" onclick="openOnboard()">
+        <div class="action-icon">+</div>
+        <div class="action-title">Dar de Alta Cliente</div>
+        <div class="action-desc">Crea un nuevo negocio con su propia API key, proyecto y token. Listo para recibir leads en segundos.</div>
+      </div>
+      <div class="action-card fleet" onclick="loadFleet()">
+        <div class="action-icon">&#9638;</div>
+        <div class="action-title">Ver mi Flota</div>
+        <div class="action-desc">Lista todos tus clientes, su nivel de acceso, cuantos leads tienen y su estado.</div>
+      </div>
+      <div class="action-card metrics" onclick="goMetrics()">
+        <div class="action-icon">&#9670;</div>
+        <div class="action-title">Dashboard de Metricas</div>
+        <div class="action-desc">Ve KPIs, graficas, hot leads, atribucion y alertas de cualquier tenant.</div>
+      </div>
+      <div class="action-card levels" onclick="toggleLevels()">
+        <div class="action-icon">&#9673;</div>
+        <div class="action-title">Colorimetria de Niveles</div>
+        <div class="action-desc">No sabes que nivel elegir? Aqui la guia visual de los 5 niveles con colores.</div>
+      </div>
+    </div>
+
+    <!-- COLORIMETRY GUIDE (hidden by default) -->
+    <div id="levels-guide" style="display:none;">
+      <div class="color-guide">
+        <div class="color-card" style="border-color:var(--self)">
+          <div class="cc-name" style="color:var(--self)">SELF</div>
+          <div class="cc-desc">Tu propio negocio. Ya existe. Eres tu: Andres / Axis.</div>
+          <div class="cc-access" style="background:rgba(46,204,113,.15); color:var(--self)">Acceso: TOTAL permanente</div>
+        </div>
+        <div class="color-card" style="border-color:var(--managed)">
+          <div class="cc-name" style="color:var(--managed)">MANAGED</div>
+          <div class="cc-desc">"Hazme una web y analiza mis leads." Tu VES TODO de este cliente. El caso mas comun.</div>
+          <div class="cc-access" style="background:rgba(0,209,255,.15); color:var(--managed)">Acceso: TOTAL a sus datos</div>
+        </div>
+        <div class="color-card" style="border-color:var(--hosted)">
+          <div class="cc-name" style="color:var(--hosted)">HOSTED</div>
+          <div class="cc-desc">"Solo quiero el tracking, mis datos son mios." Tu solo ves metricas, NO datos.</div>
+          <div class="cc-access" style="background:rgba(255,107,43,.15); color:var(--hosted)">Acceso: Solo metricas</div>
+        </div>
+        <div class="color-card" style="border-color:var(--reseller)">
+          <div class="cc-name" style="color:var(--reseller)">RESELLER</div>
+          <div class="cc-desc">"Agencia X me pide la plataforma para SUS clientes." White-label. El crea sub-clientes.</div>
+          <div class="cc-access" style="background:rgba(142,68,173,.15); color:var(--reseller)">Acceso: Solo stats del reseller</div>
+        </div>
+        <div class="color-card" style="border-color:var(--contractor)">
+          <div class="cc-name" style="color:var(--contractor)">CONTRACTOR</div>
+          <div class="cc-desc">"Construyeme algo, tienes 3 meses." Acceso total pero con FECHA DE EXPIRACION.</div>
+          <div class="cc-access" style="background:rgba(241,196,15,.15); color:var(--contractor)">Acceso: TOTAL pero temporal</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULT PANEL (for onboard results) -->
+    <div id="result-panel" class="result-panel">
+      <div class="result-title" id="result-title"></div>
+      <pre class="result-code" id="result-code"></pre>
+    </div>
+
+    <!-- FLEET LIST -->
+    <div class="fleet-section" id="fleet-section" style="display:none;">
+      <div class="section-title">Tu Flota</div>
+      <div class="fleet-cards" id="fleet-cards"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ONBOARD MODAL -->
+<div class="modal-bg" id="modal-onboard">
+  <div class="modal" style="position:relative;">
+    <button class="close-btn" onclick="closeOnboard()">&times;</button>
+    <div class="modal-title">Dar de Alta un Cliente Nuevo</div>
+
+    <div class="form-group">
+      <label class="form-label">Nombre del negocio</label>
+      <input class="form-input" id="ob-name" placeholder="ej. Tacos El Primo, Salon Maria...">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Descripcion (opcional)</label>
+      <input class="form-input" id="ob-desc" placeholder="ej. Taqueria en Monterrey">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Nivel de acceso — elige segun la relacion</label>
+      <div class="level-options" id="level-options">
+        <div class="level-option selected" data-level="managed" style="--selected-color:var(--managed)" onclick="selectLevel(this)">
+          <div class="level-dot" style="background:var(--managed)"></div>
+          <div class="level-info">
+            <div class="level-name" style="color:var(--managed)">MANAGED — El mas comun</div>
+            <div class="level-desc">Tu analizas sus leads. Ves todo. Ideal para la mayoria de clientes.</div>
+          </div>
+        </div>
+        <div class="level-option" data-level="hosted" onclick="selectLevel(this)">
+          <div class="level-dot" style="background:var(--hosted)"></div>
+          <div class="level-info">
+            <div class="level-name" style="color:var(--hosted)">HOSTED — SaaS puro</div>
+            <div class="level-desc">El cliente controla todo. Tu solo ves metricas, no sus datos.</div>
+          </div>
+        </div>
+        <div class="level-option" data-level="reseller" onclick="selectLevel(this)">
+          <div class="level-dot" style="background:var(--reseller)"></div>
+          <div class="level-info">
+            <div class="level-name" style="color:var(--reseller)">RESELLER — Agencia aliada</div>
+            <div class="level-desc">Una agencia que quiere la plataforma para sus propios clientes (white-label).</div>
+          </div>
+        </div>
+        <div class="level-option" data-level="contractor" onclick="selectLevel(this)">
+          <div class="level-dot" style="background:var(--contractor)"></div>
+          <div class="level-info">
+            <div class="level-name" style="color:var(--contractor)">CONTRACTOR — Temporal</div>
+            <div class="level-desc">Te subcontratan. Acceso total pero se vence (default: 90 dias).</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group" id="days-group" style="display:none;">
+      <label class="form-label">Dias de acceso (solo contractor)</label>
+      <input class="form-input" id="ob-days" type="number" value="90" placeholder="90">
+    </div>
+
+    <button class="submit-btn" style="background:var(--managed)" id="ob-submit" onclick="submitOnboard()">
+      Crear Cliente
+    </button>
+  </div>
+</div>
+
+<!-- LEADS MODAL -->
+<div class="modal-bg" id="modal-leads">
+  <div class="modal" style="position:relative; width:700px;">
+    <button class="close-btn" onclick="closeLeads()">&times;</button>
+    <div class="modal-title" id="leads-title">Leads</div>
+    <div id="leads-content" style="font-size:13px;"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  let BASE = '', KEY = '';
+  const COLORS = { self:'#2ECC71', managed:'#00D1FF', hosted:'#FF6B2B', reseller:'#8E44AD', contractor:'#F1C40F' };
+  let selectedLevel = 'managed';
+
+  // ── AUTH ──
+  async function doLogin() {
+    const base = document.getElementById('inp-base').value.trim().replace(/\/+$/, '');
+    const key = document.getElementById('inp-apikey').value.trim();
+    if (!base || !key) { document.getElementById('auth-err').textContent = 'Llena ambos campos'; return; }
+    try {
+      const r = await fetch(base + '/leads', { headers: { 'x-api-key': key } });
+      if (r.status === 403) { document.getElementById('auth-err').textContent = 'API Key invalida'; return; }
+    } catch (e) { document.getElementById('auth-err').textContent = 'Error de red'; return; }
+    BASE = base; KEY = key;
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadFleet();
+  }
+  function doLogout() {
+    BASE = ''; KEY = '';
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('auth-screen').style.display = 'flex';
+  }
+  document.getElementById('inp-apikey').addEventListener('keydown', e => e.key === 'Enter' && doLogin());
+
+  // ── ONBOARD ──
+  function openOnboard() {
+    document.getElementById('modal-onboard').classList.add('active');
+    document.getElementById('ob-name').value = '';
+    document.getElementById('ob-desc').value = '';
+    document.getElementById('ob-name').focus();
+  }
+  function closeOnboard() { document.getElementById('modal-onboard').classList.remove('active'); }
+
+  function selectLevel(el) {
+    document.querySelectorAll('.level-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedLevel = el.dataset.level;
+    const color = COLORS[selectedLevel];
+    el.style.setProperty('--selected-color', color);
+    document.getElementById('ob-submit').style.background = color;
+    document.getElementById('days-group').style.display = selectedLevel === 'contractor' ? 'block' : 'none';
+  }
+
+  async function submitOnboard() {
+    const name = document.getElementById('ob-name').value.trim();
+    if (!name) { toast('Escribe el nombre del negocio', true); return; }
+    const body = {
+      name,
+      description: document.getElementById('ob-desc').value.trim(),
+      access_level: selectedLevel
+    };
+    if (selectedLevel === 'contractor') {
+      body.expires_in_days = parseInt(document.getElementById('ob-days').value) || 90;
+    }
+    const btn = document.getElementById('ob-submit');
+    btn.disabled = true; btn.textContent = 'Creando...';
+    try {
+      const r = await fetch(BASE + '/admin/fleet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': KEY },
+        body: JSON.stringify(body)
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Error al crear');
+      closeOnboard();
+      showResult(data);
+      toast('Cliente creado exitosamente');
+      loadFleet();
+    } catch (e) {
+      toast(e.message, true);
+    }
+    btn.disabled = false; btn.textContent = 'Crear Cliente';
+  }
+
+  function showResult(data) {
+    const panel = document.getElementById('result-panel');
+    panel.classList.add('active');
+    panel.classList.remove('error');
+    const t = data.tenant;
+    const p = data.project;
+    document.getElementById('result-title').textContent = 'Cliente creado: ' + t.name;
+    document.getElementById('result-code').innerHTML =
+      `<strong style="color:${COLORS[t.access_level]}">${t.access_level.toUpperCase()}</strong> — ${t.description}\n\n` +
+      `TENANT ID:     ${t.id}\n` +
+      `API KEY:       ${t.api_key} <button class="copy-btn" onclick="copyText('${t.api_key}')">copiar</button>\n` +
+      `PROJECT:       ${p.name}\n` +
+      `PUBLIC TOKEN:  ${p.public_token} <button class="copy-btn" onclick="copyText('${p.public_token}')">copiar</button>\n\n` +
+      `── CONECTAR META ADS (via Zapier) ──\n` +
+      `URL:  ${BASE}/api/submit?token=${p.public_token}\n` +
+      `Body: { "phone": "{{phone}}", "source": "META_ADS", "custom_data": { "nombre": "{{name}}" } }\n\n` +
+      `── CONECTAR FORMULARIO WEB ──\n` +
+      `POST ${BASE}/api/submit?token=${p.public_token}\n` +
+      `Content-Type: application/json`;
+  }
+
+  // ── FLEET ──
+  async function loadFleet() {
+    const section = document.getElementById('fleet-section');
+    const cards = document.getElementById('fleet-cards');
+    section.style.display = 'block';
+    cards.innerHTML = '<div class="empty-state">Cargando flota...</div>';
+    try {
+      const r = await fetch(BASE + '/admin/fleet', { headers: { 'x-api-key': KEY } });
+      const data = await r.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        cards.innerHTML = '<div class="empty-state">No tienes clientes aun. Dale click a "Dar de Alta Cliente" para empezar.</div>';
+        return;
+      }
+      cards.innerHTML = '';
+      data.forEach(t => {
+        const color = COLORS[t.access_level] || '#888';
+        const initial = t.name.charAt(0).toUpperCase();
+        const expired = t.is_expired ? ' (EXPIRADO)' : '';
+        cards.innerHTML += `
+          <div class="fleet-card" style="border-color:${color}">
+            <div class="fc-dot" style="background:${color}">${initial}</div>
+            <div class="fc-info">
+              <div class="fc-name">${t.name}${expired}</div>
+              <div class="fc-level" style="color:${color}">${t.access_level}</div>
+              <div class="fc-stats">${t.total_leads || 0} leads &middot; ${t.total_projects || 0} proyectos &middot; Ultimo lead: ${t.last_lead_at ? new Date(t.last_lead_at).toLocaleDateString('es-MX') : 'ninguno'}</div>
+            </div>
+            <div class="fc-actions">
+              <button class="fc-btn" onclick="viewLeads('${t.id}','${t.name}')">Ver leads</button>
+              <button class="fc-btn" onclick="viewDetail('${t.id}')">Detalle</button>
+            </div>
+          </div>`;
+      });
+    } catch (e) {
+      cards.innerHTML = `<div class="empty-state" style="color:#FF3D00">Error: ${e.message}</div>`;
+    }
+  }
+
+  // ── VIEW LEADS ──
+  async function viewLeads(tenantId, name) {
+    document.getElementById('modal-leads').classList.add('active');
+    document.getElementById('leads-title').textContent = 'Leads — ' + name;
+    const content = document.getElementById('leads-content');
+    content.innerHTML = 'Cargando...';
+    try {
+      const r = await fetch(BASE + '/admin/fleet/' + tenantId + '/leads', { headers: { 'x-api-key': KEY } });
+      const data = await r.json();
+      if (data.leads && data.leads.length > 0) {
+        let html = `<div style="color:var(--muted);margin-bottom:10px">Acceso: ${data.access} &middot; ${data.leads.length} leads</div>`;
+        html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
+        html += '<tr style="color:#666;border-bottom:1px solid #222"><th style="text-align:left;padding:6px 0">Tel</th><th>Fuente</th><th>Nombre</th><th>Fecha</th></tr>';
+        data.leads.slice(0, 30).forEach(l => {
+          const src = l.custom_data?.source || '—';
+          const nombre = l.custom_data?.custom_data?.nombre || l.custom_data?.nombre || '—';
+          const date = new Date(l.created_at).toLocaleDateString('es-MX');
+          html += `<tr style="border-bottom:1px solid #1a1a1a"><td style="padding:8px 0">${l.phone}</td><td>${src}</td><td>${nombre}</td><td style="color:#666">${date}</td></tr>`;
+        });
+        html += '</table>';
+        content.innerHTML = html;
+      } else if (data.stats) {
+        content.innerHTML = `<div style="padding:20px">Acceso: ${data.access}<br>Total leads: ${data.stats.total_leads}<br>Hoy: ${data.stats.leads_today}<br>Semana: ${data.stats.leads_week}</div>`;
+      } else {
+        content.innerHTML = '<div class="empty-state">Sin leads aun</div>';
+      }
+    } catch (e) {
+      content.innerHTML = `<div style="color:#FF3D00">${e.message}</div>`;
+    }
+  }
+  function closeLeads() { document.getElementById('modal-leads').classList.remove('active'); }
+
+  // ── VIEW DETAIL ──
+  async function viewDetail(tenantId) {
+    try {
+      const r = await fetch(BASE + '/admin/fleet/' + tenantId, { headers: { 'x-api-key': KEY } });
+      const data = await r.json();
+      const panel = document.getElementById('result-panel');
+      panel.classList.add('active');
+      panel.classList.remove('error');
+      const color = COLORS[data.access_level] || '#888';
+      document.getElementById('result-title').innerHTML = `<span style="color:${color}">${data.name}</span>`;
+      let code = `NIVEL:         ${data.access_level.toUpperCase()} (${data.level_description})\n`;
+      code += `TENANT ID:     ${data.id}\n`;
+      code += `API KEY:       ${data.api_key} <button class="copy-btn" onclick="copyText('${data.api_key}')">copiar</button>\n`;
+      if (data.access_expires_at) code += `EXPIRA:        ${new Date(data.access_expires_at).toLocaleDateString('es-MX')}\n`;
+      code += `\nESTADISTICAS:\n`;
+      code += `  Leads total: ${data.stats?.total_leads || 0}\n`;
+      code += `  Leads hoy:   ${data.stats?.leads_today || 0}\n`;
+      code += `  Proyectos:   ${data.stats?.total_projects || 0}\n`;
+      code += `  Eventos:     ${data.stats?.total_events || 0}\n`;
+      if (data.projects && data.projects.length > 0) {
+        code += `\nPROYECTOS:\n`;
+        data.projects.forEach(p => {
+          code += `  ${p.name}\n    Token: ${p.public_token} <button class="copy-btn" onclick="copyText('${p.public_token}')">copiar</button>\n`;
+          code += `    URL Meta: ${BASE}/api/submit?token=${p.public_token}\n`;
+        });
+      }
+      document.getElementById('result-code').innerHTML = code;
+      panel.scrollIntoView({ behavior: 'smooth' });
+    } catch (e) {
+      toast(e.message, true);
+    }
+  }
+
+  // ── HELPERS ──
+  function goMetrics() { window.open('metrics.html', '_blank'); }
+
+  function toggleLevels() {
+    const el = document.getElementById('levels-guide');
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    if (el.style.display === 'block') el.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function copyText(text) {
+    navigator.clipboard.writeText(text);
+    toast('Copiado al portapapeles');
+  }
+
+  function toast(msg, isError) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.borderColor = isError ? '#FF3D00' : '#2ECC71';
+    el.classList.add('active');
+    setTimeout(() => el.classList.remove('active'), 3000);
+  }
+</script>
+</body>
+</html>
