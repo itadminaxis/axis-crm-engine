@@ -36,7 +36,7 @@
 
   #app {
     display: grid;
-    grid-template-columns: 320px 1fr;
+    grid-template-columns: 448px 1fr;
     grid-template-rows: 58px 1fr 82px 72px;
     height: 100vh; gap: 5px; padding: 7px;
   }
@@ -76,7 +76,32 @@
     border-bottom: 1px solid rgba(56,189,248,0.2);
   }
 
-  .sidebar-left { grid-column: 1; grid-row: 2 / 5; border-right: 1px solid rgba(255,255,255,0.06); overflow-y: auto; padding: 14px 12px; font-size: 1em; }
+  .sidebar-left { grid-column: 1; grid-row: 2 / 5; border-right: 1px solid rgba(255,255,255,0.06); overflow-y: auto; padding: 16px 18px; font-size: 1.05em; }
+  /* Bloques de sección con colorimetría */
+  .sec { border-radius: 4px; padding: 12px 14px; margin-bottom: 14px; }
+  .sec-red    { background: rgba(239,68,68,0.07);   border-left: 4px solid var(--red); }
+  .sec-blue   { background: rgba(56,189,248,0.07);  border-left: 4px solid var(--cyan); }
+  .sec-body   { background: rgba(255,255,255,0.04); border-left: 4px solid rgba(255,255,255,0.18); }
+  .sec-purple { background: rgba(167,139,250,0.07); border-left: 4px solid #a78bfa; }
+  .sec-press  { background: rgba(20,28,48,0.6);     border-left: 4px solid rgba(255,255,255,0.12); }
+  .sec-amber  { background: rgba(245,158,11,0.07);  border-left: 4px solid var(--yellow); }
+  .sec-muted  { background: rgba(255,255,255,0.02); border-left: 4px solid rgba(255,255,255,0.08); padding: 10px 14px; border-radius: 4px; margin-bottom: 10px; }
+  .sec-label  { font-family: 'Rajdhani', sans-serif; font-size: 0.7em; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+  /* Grid datos en vivo */
+  .live-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .live-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); border-radius: 4px; padding: 9px 11px; }
+  .live-card .lk { font-size: 0.72em; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 4px; }
+  .live-card .lv { font-size: 0.95em; color: var(--text); font-family: 'Share Tech Mono', monospace; line-height: 1.3; }
+  /* LIVE badge */
+  .live-badge {
+    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+    z-index: 1050; display: flex; align-items: center; gap: 8px;
+    background: rgba(10,16,32,0.88); border: 1px solid rgba(239,68,68,0.5);
+    padding: 5px 16px; border-radius: 20px;
+    font-family: 'Orbitron'; font-size: 0.72em; letter-spacing: 2px; color: #fff;
+    box-shadow: 0 2px 12px rgba(239,68,68,0.25);
+  }
+  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); animation: blinkPulse 1.4s ease-in-out infinite; flex-shrink: 0; }
 
   .s-head { font-family: 'Orbitron'; font-size: 0.72em; color: var(--red); letter-spacing: 2px; padding: 10px 0; border-bottom: 2px solid var(--red); margin-bottom: 12px; font-weight: 700; }
   .s-head.cyan { color: var(--cyan); border-bottom-color: var(--cyan); }
@@ -221,70 +246,107 @@
 
   <div class="panel sidebar-left">
 
-    <div style="padding:8px 0 12px; border-bottom:2px solid var(--red); margin-bottom:10px;">
-      <div style="font-family:'Orbitron'; font-size:0.9em; color:var(--red); letter-spacing:2px; font-weight:900;">DERRAME ACTIVO</div>
-      <div style="font-family:'Orbitron'; font-size:0.7em; color:rgba(255,255,255,0.7); letter-spacing:1px; margin-top:2px;">GOLFO DE MÉXICO — DESDE 1 MAR 2026</div>
-    </div>
-    <div style="background:rgba(0,200,255,0.05);border-left:3px solid var(--cyan);padding:8px 10px;margin-bottom:12px;font-size:0.88em;line-height:1.5;color:rgba(255,255,255,0.78);">
-      <b style="color:var(--cyan);font-family:'Orbitron';font-size:0.75em;letter-spacing:1px;">¿QUÉ ES ESTO?</b><br>
-      Monitor de seguimiento independiente del derrame de hidrocarburos activo en el Golfo de México. El seguimiento de este evento es una responsabilidad pública: sus implicaciones abarcan las economías pesqueras y turísticas de las zonas costeras, la supervivencia de fauna marina protegida y la integridad de siete reservas naturales. Los datos son satelitales, verificables y de código abierto.
+    <!-- BLOQUE 1: Alerta roja — evento activo -->
+    <div class="sec sec-red" style="margin-bottom:14px;">
+      <div style="font-family:'Orbitron'; font-size:1em; color:var(--red); letter-spacing:2px; font-weight:900;">DERRAME ACTIVO</div>
+      <div style="font-family:'Rajdhani'; font-size:0.85em; color:rgba(255,255,255,0.75); letter-spacing:1px; margin-top:4px; font-weight:600;">GOLFO DE MÉXICO · DESDE 1 MAR 2026 · DÍA <span id="day-counter">—</span></div>
     </div>
 
-    <div style="font-size:1em; line-height:1.5; color:rgba(255,255,255,0.88); margin-bottom:12px;">
-      Un derrame de hidrocarburos afecta <b style="color:#fff;">630+ km de costa</b> en cuatro estados. SEMAR identificó tres fuentes: un buque no identificado en <b>Coatzacoalcos</b>, chapopoteras cercanas y emanaciones en <b>Cantarell</b>. Se han retirado 430 toneladas de crudo. Fauna muerta incluye tortugas marinas y un manatí. Siete reservas naturales afectadas.
-    </div>
-
-    <div style="font-family:'Orbitron'; font-size:0.65em; color:var(--cyan); letter-spacing:2px; margin-bottom:6px;">CRONOLOGÍA SATELITAL (SAR)</div>
-    <div id="sar-timeline" style="font-size:0.92em; line-height:1.6; color:rgba(255,255,255,0.75); border-left:2px solid rgba(255,255,255,0.15); padding-left:10px; margin-bottom:12px;">
-      Cargando detecciones...
-    </div>
-
-    <div style="font-family:'Orbitron'; font-size:0.65em; color:var(--cyan); letter-spacing:2px; margin-bottom:10px;">COBERTURA VERIFICADA</div>
-    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;">
-
-      <div style="border-left:3px solid var(--cyan); padding:7px 10px; background:rgba(56,189,248,0.05); border-radius:0 3px 3px 0;">
-        <div style="font-size:0.75em; color:var(--text-dim); margin-bottom:3px;">27 MAR 2026 · AL JAZEERA</div>
-        <a href="https://www.aljazeera.com/news/2026/3/27/wildlife-killed-reefs-damaged-in-active-gulf-of-mexico-oil-spill" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.9em; line-height:1.4; display:block;">Fauna muerta, arrecifes dañados en derrame activo del Golfo</a>
-      </div>
-
-      <div style="border-left:3px solid var(--cyan); padding:7px 10px; background:rgba(56,189,248,0.05); border-radius:0 3px 3px 0;">
-        <div style="font-size:0.75em; color:var(--text-dim); margin-bottom:3px;">MAR 2026 · ABC NEWS</div>
-        <a href="https://abcnews.com/International/wireStory/gulf-mexico-oil-spill-spread-hundreds-miles-killed-131454235" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.9em; line-height:1.4; display:block;">Derrame se extiende cientos de millas, mata fauna marina</a>
-      </div>
-
-      <div style="border-left:3px solid var(--yellow); padding:7px 10px; background:rgba(251,191,36,0.04); border-radius:0 3px 3px 0;">
-        <div style="font-size:0.75em; color:var(--text-dim); margin-bottom:3px;">MAR 2026 · VERIFICADO.COM.MX</div>
-        <a href="https://verificado.com.mx/derrame-golfo-de-mx-un-desastre-ambiental-envuelto-en-opacidad-y-desinformacion-cruzada/" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.9em; line-height:1.4; display:block;">Desastre ambiental envuelto en opacidad y desinformación cruzada</a>
-      </div>
-
-      <div style="border-left:3px solid var(--green); padding:7px 10px; background:rgba(52,211,153,0.04); border-radius:0 3px 3px 0;">
-        <div style="font-size:0.75em; color:var(--text-dim); margin-bottom:3px;">FEB 2025 · MONGABAY</div>
-        <a href="https://es.mongabay.com/2025/02/derrames-impunes-imagenes-satelitales-revelan-derrames-petroleo-no-reportados-golfo-de-mexico/" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.9em; line-height:1.4; display:block;">Imágenes satelitales revelan derrames no reportados — patrón previo documentado</a>
-      </div>
-
-      <div style="border-left:3px solid rgba(255,255,255,0.2); padding:7px 10px; background:rgba(255,255,255,0.03); border-radius:0 3px 3px 0;">
-        <div style="font-size:0.75em; color:var(--text-dim); margin-bottom:3px;">ACTIVO · RED CORREDOR ARRECIFAL</div>
-        <a href="https://www.milenio.com/comunidad/mapa-ciudadano-reportar-derrame-crudo-golfo-mexico" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.9em; line-height:1.4; display:block;">Mapa ciudadano de reportes en campo</a>
+    <!-- BLOQUE 2: Contexto azul — qué es esto -->
+    <div class="sec sec-blue" style="margin-bottom:14px;">
+      <div class="sec-label" style="color:var(--cyan);">¿Qué es este monitor?</div>
+      <div style="font-size:0.92em; line-height:1.6; color:rgba(255,255,255,0.85);">
+        Seguimiento satelital independiente del derrame activo. El seguimiento de este evento es una responsabilidad pública: afecta economías pesqueras y turísticas costeras, fauna marina protegida y siete reservas naturales. Datos verificables, código abierto.
       </div>
     </div>
 
-    <div style="font-family:'Orbitron'; font-size:0.65em; color:rgba(255,255,255,0.5); letter-spacing:2px; margin-bottom:6px;">DATOS EN VIVO</div>
-    <div style="font-family:'Share Tech Mono'; font-size:0.85em; color:rgba(255,255,255,0.7); line-height:1.6;">
-      <div id="wind-info">VIENTO: ---</div>
-      <div id="current-info">CORRIENTE: ---</div>
-      <div id="stale-warning" style="color:var(--yellow); display:none;"></div>
-      <div id="sar-info">SAR: ---</div>
-      <div id="credibility-info">HEURÍSTICA: ---</div>
-      <div id="model-info">MODELO: ---</div>
-      <div id="eta" style="display:none;">N/D</div>
+    <!-- BLOQUE 3: Cuerpo neutro — hechos documentados -->
+    <div class="sec sec-body" style="margin-bottom:14px;">
+      <div class="sec-label" style="color:rgba(255,255,255,0.5);">Hechos documentados</div>
+      <div style="font-size:0.95em; line-height:1.65; color:rgba(255,255,255,0.88);">
+        <b style="color:#fff;">630+ km de costa</b> en cuatro estados. SEMAR identificó tres fuentes: buque no identificado en <b>Coatzacoalcos</b>, chapopoteras cercanas y emanaciones en <b>Cantarell</b>. 430 toneladas de crudo retiradas. Tortugas marinas y un manatí muertos. Siete reservas naturales afectadas.
+      </div>
     </div>
 
-    <div style="margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.08); font-size:0.78em; color:rgba(255,255,255,0.45); line-height:1.4;">
-      <b>Gulf Sentinel</b> es una herramienta de monitoreo ambiental independiente operada por <b>The Boreal Axis LLC</b>. Los datos provienen de fuentes públicas verificables: Sentinel-1 SAR vía <a href="https://cerulean.skytruth.org/" target="_blank" rel="noreferrer" style="color:rgba(255,255,255,0.55);">SkyTruth Cerulean</a> (ESA/NASA), viento vía Open-Meteo, corrientes vía HYCOM/ERDDAP. Esta plataforma no sustituye comunicados oficiales de autoridades ambientales. The Boreal Axis LLC no tiene afiliación con ningún gobierno ni partido político.
+    <!-- BLOQUE 4: Cronología púrpura — datos SAR -->
+    <div class="sec sec-purple" style="margin-bottom:14px;">
+      <div class="sec-label" style="color:#a78bfa;">Cronología Satelital (SAR · Sentinel-1)</div>
+      <div id="sar-timeline" style="font-size:0.93em; line-height:1.65; color:rgba(255,255,255,0.82);">
+        Cargando detecciones...
+      </div>
+    </div>
+
+    <!-- BLOQUE 5: Cobertura de prensa -->
+    <div class="sec sec-press" style="margin-bottom:14px;">
+      <div class="sec-label" style="color:rgba(255,255,255,0.5);">Cobertura verificada</div>
+      <div style="display:flex; flex-direction:column; gap:7px;">
+        <div style="border-left:3px solid var(--cyan); padding:7px 10px; background:rgba(56,189,248,0.06); border-radius:0 3px 3px 0;">
+          <div style="font-size:0.75em; color:var(--text-dim); margin-bottom:3px;">27 MAR 2026 · AL JAZEERA</div>
+          <a href="https://www.aljazeera.com/news/2026/3/27/wildlife-killed-reefs-damaged-in-active-gulf-of-mexico-oil-spill" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.92em; line-height:1.4; display:block;">Fauna muerta, arrecifes dañados en derrame activo del Golfo</a>
+        </div>
+        <div style="border-left:3px solid var(--cyan); padding:7px 10px; background:rgba(56,189,248,0.06); border-radius:0 3px 3px 0;">
+          <div style="font-size:0.75em; color:var(--text-dim); margin-bottom:3px;">MAR 2026 · ABC NEWS</div>
+          <a href="https://abcnews.com/International/wireStory/gulf-mexico-oil-spill-spread-hundreds-miles-killed-131454235" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.92em; line-height:1.4; display:block;">Derrame se extiende cientos de millas, mata fauna marina</a>
+        </div>
+        <div style="border-left:3px solid var(--yellow); padding:7px 10px; background:rgba(251,191,36,0.05); border-radius:0 3px 3px 0;">
+          <div style="font-size:0.75em; color:var(--text-dim); margin-bottom:3px;">MAR 2026 · VERIFICADO.COM.MX</div>
+          <a href="https://verificado.com.mx/derrame-golfo-de-mx-un-desastre-ambiental-envuelto-en-opacidad-y-desinformacion-cruzada/" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.92em; line-height:1.4; display:block;">Desastre ambiental envuelto en opacidad y desinformación cruzada</a>
+        </div>
+        <div style="border-left:3px solid var(--green); padding:7px 10px; background:rgba(52,211,153,0.05); border-radius:0 3px 3px 0;">
+          <div style="font-size:0.75em; color:var(--text-dim); margin-bottom:3px;">FEB 2025 · MONGABAY</div>
+          <a href="https://es.mongabay.com/2025/02/derrames-impunes-imagenes-satelitales-revelan-derrames-petroleo-no-reportados-golfo-de-mexico/" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.92em; line-height:1.4; display:block;">Imágenes satelitales revelan derrames no reportados — patrón previo</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOQUE 6: Datos en vivo ámbar — cards -->
+    <div class="sec sec-amber" style="margin-bottom:14px;">
+      <div class="sec-label" style="color:var(--yellow);">Datos en vivo</div>
+      <div class="live-grid">
+        <div class="live-card">
+          <div class="lk">Viento</div>
+          <div class="lv" id="wind-info">---</div>
+        </div>
+        <div class="live-card">
+          <div class="lk">Corriente HYCOM</div>
+          <div class="lv" id="current-info">---</div>
+        </div>
+        <div class="live-card">
+          <div class="lk">Detecciones SAR</div>
+          <div class="lv" id="sar-info">---</div>
+        </div>
+        <div class="live-card">
+          <div class="lk">Heurística</div>
+          <div class="lv" id="credibility-info">---</div>
+        </div>
+      </div>
+      <div style="margin-top:8px; font-size:0.8em; color:var(--text-dim);" id="model-info">MODELO: ---</div>
+      <div id="stale-warning" style="color:var(--yellow); font-size:0.82em; margin-top:4px; display:none;"></div>
+      <div id="eta" style="display:none;"></div>
+    </div>
+
+    <!-- BLOQUE 7: Compartir — URL, embed, QR -->
+    <div class="sec sec-muted" style="margin-bottom:14px;">
+      <div class="sec-label" style="color:rgba(255,255,255,0.4);">Compartir este monitor</div>
+      <div style="font-family:'Share Tech Mono'; font-size:0.78em; color:var(--cyan); background:rgba(0,0,0,0.3); padding:7px 10px; border-radius:3px; word-break:break-all; margin-bottom:8px;">
+        https://attractive-mindfulness-production.up.railway.app/golfo/
+      </div>
+      <div style="display:flex; gap:8px; align-items:flex-start;">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&color=38bdf8&bgcolor=0b1120&data=https://attractive-mindfulness-production.up.railway.app/golfo/" alt="QR Gulf Sentinel" style="border-radius:4px; border:1px solid rgba(56,189,248,0.3); flex-shrink:0;">
+        <div style="font-size:0.78em; color:var(--text-dim); line-height:1.5;">
+          Código embed para sitios web:<br>
+          <div style="font-family:'Share Tech Mono'; font-size:0.9em; background:rgba(0,0,0,0.3); padding:6px 8px; border-radius:3px; margin-top:4px; color:rgba(255,255,255,0.6); word-break:break-all;">&lt;iframe src="https://attractive-mindfulness-production.up.railway.app/golfo/" width="100%" height="600" frameborder="0"&gt;&lt;/iframe&gt;</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOQUE 8: Disclaimer muted -->
+    <div style="font-size:0.78em; color:rgba(255,255,255,0.38); line-height:1.5; padding: 0 2px 16px;">
+      <b style="color:rgba(255,255,255,0.55);">Gulf Sentinel</b> es operado por <b style="color:rgba(255,255,255,0.55);">The Boreal Axis LLC</b>. Datos: Sentinel-1 SAR / SkyTruth Cerulean (ESA/NASA), Open-Meteo, HYCOM/ERDDAP. No sustituye comunicados oficiales. Sin afiliación política.
       <span id="origin-note-api"></span>
     </div>
 
-    <!-- Hidden inputs for TGT functionality -->
+    <!-- Hidden inputs -->
     <div style="display:none;">
       <input id="tgt-lat"><input id="tgt-lon"><input id="tgt-name">
       <button id="tgt-apply"></button><div id="tgt-apply-status"></div>
@@ -299,6 +361,14 @@
 
   <div class="panel map-container">
     <div id="map1"></div>
+    <!-- LIVE badge — centro superior del mapa -->
+    <div class="live-badge" id="live-badge">
+      <div class="live-dot"></div>
+      <span style="letter-spacing:3px;">LIVE</span>
+      <span id="live-time" style="font-size:0.85em; opacity:0.85; letter-spacing:1px;">--:--</span>
+      <span style="width:1px; height:14px; background:rgba(255,255,255,0.2); display:inline-block; margin: 0 2px;"></span>
+      <span style="font-size:0.78em; color:rgba(239,68,68,0.9); letter-spacing:1px;">DÍA <span id="live-day">—</span></span>
+    </div>
     <div style="position:absolute; top:10px; left:10px; z-index:1000; background:rgba(9,16,32,0.88); border:1px solid rgba(255,43,85,0.4); padding:6px 12px; font-family:'Orbitron'; font-size:0.65em; color:rgba(255,255,255,0.9); letter-spacing:1px;">
       DETECCIONES SAR • SENTINEL-1 + ML (SkyTruth Cerulean)
     </div>
@@ -392,11 +462,33 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+  const SPILL_START = new Date('2026-03-01T00:00:00Z');
+
+  function getSpillDay() {
+    return Math.floor((Date.now() - SPILL_START.getTime()) / 86400000) + 1;
+  }
+
+  function updateLiveBadge() {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    const dayNum = getSpillDay();
+    const liveTimeEl = document.getElementById('live-time');
+    const liveDayEl = document.getElementById('live-day');
+    const dayCounterEl = document.getElementById('day-counter');
+    if (liveTimeEl) liveTimeEl.textContent = `${hh}:${mm}`;
+    if (liveDayEl) liveDayEl.textContent = dayNum;
+    if (dayCounterEl) dayCounterEl.textContent = dayNum;
+  }
+
   setInterval(() => {
     const now = new Date();
     document.getElementById('clock').textContent = now.toLocaleTimeString('es-MX',{hour12:false});
     document.getElementById('full-date').textContent = now.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase();
+    updateLiveBadge();
   }, 1000);
+
+  updateLiveBadge(); // ejecución inmediata al cargar
 
   var map1 = L.map('map1', {zoomControl: false, attributionControl: true}).setView([21.0, -93.0], 6);
   map1.attributionControl.setPrefix(false);
