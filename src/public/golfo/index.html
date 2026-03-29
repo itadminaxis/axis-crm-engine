@@ -1099,11 +1099,8 @@
     'share': { en: 'SHARE', es: 'COMPARTIR' },
     'updates': { en: 'Updates every 5 min.', es: 'Actualiza c/5 min.' },
   };
-  // Map data-i18n keys to elements
-  document.querySelectorAll('[data-i18n]').forEach(function(el) {
-    var key = el.getAttribute('data-i18n');
-    if (i18n[key]) el.textContent = i18n[key][currentLang];
-  });
+  // No initial run needed — HTML already has English text.
+  // Only toggleLang() swaps content.
 
   function toggleLang() {
     currentLang = currentLang === 'en' ? 'es' : 'en';
