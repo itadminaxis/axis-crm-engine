@@ -9,35 +9,76 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
   :root {
-    --red: #ff2b55; --cyan: #00c8ff; --green: #00ffb3; --yellow: #ffcc00;
-    --bg: #050b18; --panel: rgba(9, 16, 32, 0.94); --border: rgba(0, 200, 255, 0.22);
-    --muted: rgba(255,255,255,0.55);
+    --red: #ef4444;
+    --cyan: #38bdf8;
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --bg: #0b1120;
+    --panel: rgba(15, 23, 42, 0.97);
+    --border: rgba(56, 189, 248, 0.16);
+    --muted: rgba(148, 163, 184, 0.85);
+    --text: #e2e8f0;
+    --text-dim: rgba(148,163,184,0.75);
   }
-  body { background: radial-gradient(1200px 800px at 20% 0%, rgba(0,200,255,0.10), transparent 60%), radial-gradient(900px 600px at 80% 10%, rgba(0,255,179,0.08), transparent 55%), var(--bg); color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 13px; height: 100vh; overflow: hidden; margin: 0; }
-  
+  body {
+    background:
+      radial-gradient(900px 600px at 15% 0%, rgba(56,189,248,0.07), transparent 60%),
+      radial-gradient(700px 500px at 85% 10%, rgba(52,211,153,0.05), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    height: 100vh;
+    overflow: hidden;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
   #app {
     display: grid;
-    grid-template-columns: 300px 1fr 380px;
-    grid-template-rows: 52px 1fr 120px;
-    height: 100vh; gap: 4px; padding: 6px;
+    grid-template-columns: 320px 1fr;
+    grid-template-rows: 58px 1fr 82px 72px;
+    height: 100vh; gap: 5px; padding: 7px;
   }
 
   header {
-    grid-column: 1 / 4;
-    background: linear-gradient(90deg, rgba(9,16,32,0.95), rgba(9,16,32,0.75)); border: 1px solid rgba(0,200,255,0.28);
-    display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
-    box-shadow: 0 0 22px rgba(0,200,255,0.12);
+    grid-column: 1 / 3;
+    background: linear-gradient(90deg, rgba(15,23,42,0.98), rgba(15,23,42,0.88));
+    border: 1px solid rgba(56,189,248,0.20);
+    display: flex; align-items: center; justify-content: space-between; padding: 0 22px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.4);
   }
-  header h1 { font-family: 'Orbitron'; font-size: 1.6em; color: #fff; letter-spacing: 6px; font-weight: 900; margin: 0; text-shadow: 0 0 16px rgba(0,200,255,0.18); }
+  header h1 { font-family: 'Orbitron'; font-size: 1.45em; color: #fff; letter-spacing: 4px; font-weight: 900; margin: 0; }
 
-  .panel { background: var(--panel); border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; position: relative; }
-  
-  #map1, #map2 { width: 100%; height: 100%; filter: contrast(1.25) saturate(1.15) brightness(0.95); background: #000; }
-  .map-container { position: relative; border-left: 1px solid rgba(255,255,255,0.08); }
+  .panel { background: var(--panel); border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; position: relative; border-radius: 3px; }
 
-  .sidebar-left { grid-column: 1; grid-row: 2 / 4; border-right: 1px solid rgba(255,255,255,0.08); overflow-y: auto; padding: 10px; font-size: 0.92em; }
+  #map1 { width: 100%; height: 100%; filter: contrast(1.15) saturate(1.1) brightness(0.97); background: #000; }
+  .map-container { position: relative; grid-column: 2; grid-row: 2 / 3; }
 
-  .s-head { font-family: 'Orbitron'; font-size: 0.8em; color: var(--red); letter-spacing: 3px; padding: 12px 0; border-bottom: 2px solid var(--red); margin-bottom: 12px; font-weight: 700; }
+  /* PiP Windy overlay */
+  .windy-pip {
+    position: absolute;
+    top: 12px; right: 12px;
+    width: 280px; height: 200px;
+    z-index: 1100;
+    border: 1px solid rgba(56,189,248,0.35);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    background: #000;
+  }
+  .windy-pip iframe { width: 100%; height: 100%; border: none; }
+  .windy-pip-label {
+    position: absolute; top: 0; left: 0; right: 0;
+    background: rgba(15,23,42,0.88);
+    font-family: 'Orbitron'; font-size: 9px; letter-spacing: 1.5px;
+    color: rgba(56,189,248,0.9); padding: 4px 8px;
+    border-bottom: 1px solid rgba(56,189,248,0.2);
+  }
+
+  .sidebar-left { grid-column: 1; grid-row: 2 / 5; border-right: 1px solid rgba(255,255,255,0.06); overflow-y: auto; padding: 14px 12px; font-size: 1em; }
+
+  .s-head { font-family: 'Orbitron'; font-size: 0.72em; color: var(--red); letter-spacing: 2px; padding: 10px 0; border-bottom: 2px solid var(--red); margin-bottom: 12px; font-weight: 700; }
   .s-head.cyan { color: var(--cyan); border-bottom-color: var(--cyan); }
 
   .math-box {
@@ -57,7 +98,13 @@
   .method-box a:hover { border-bottom-style: solid; }
   .pill { display: inline-block; padding: 2px 6px; border: 1px solid rgba(255,255,255,0.14); border-radius: 999px; font-family: 'Share Tech Mono', monospace; font-size: 0.8em; color: rgba(255,255,255,0.75); }
 
-  .panel-bottom { grid-column: 2 / 4; grid-row: 3; border-top: 2px solid var(--cyan); display: grid; grid-template-columns: 1fr 1fr; font-size: 0.92em; }
+  /* Dos barras inferiores */
+  .bar-data    { grid-column: 2; grid-row: 3; border-top: 2px solid var(--cyan); display: flex; align-items: center; gap: 24px; padding: 0 20px; font-size: 0.92em; font-family: 'Share Tech Mono', monospace; overflow: hidden; }
+  .bar-sources { grid-column: 2; grid-row: 4; border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; padding: 8px 12px; font-size: 0.88em; }
+  .bar-kpi { display: flex; flex-direction: column; gap: 2px; border-right: 1px solid rgba(255,255,255,0.07); padding-right: 20px; }
+  .bar-kpi:last-child { border-right: none; }
+  .bar-kpi .k { font-size: 0.72em; color: var(--text-dim); letter-spacing: 1px; font-family: 'Rajdhani', sans-serif; font-weight: 600; text-transform: uppercase; }
+  .bar-kpi .v { font-size: 1em; color: var(--text); font-weight: 500; }
 
   .badge { background: var(--cyan); color: #000; font-family: 'Orbitron'; font-size: 0.65em; padding: 2px 6px; font-weight: 900; margin-right: 10px; }
   .news-list { list-style: none; padding: 0; margin: 0; }
@@ -93,25 +140,28 @@
     margin-top: 10px;
   }
   .quick {
-    border: 1px solid rgba(255,255,255,0.12);
-    background: rgba(255,255,255,0.04);
-    padding: 10px;
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.03);
+    padding: 9px 11px;
     text-decoration: none;
-    color: rgba(255,255,255,0.84);
+    color: var(--text);
     display: block;
+    border-radius: 3px;
+    transition: border-color .15s, background .15s;
   }
-  .quick .k { font-family: 'Orbitron'; font-size: 0.72em; letter-spacing: 2px; color: rgba(255,255,255,0.92); }
-  .quick .v { font-family: 'Share Tech Mono', monospace; font-size: 0.86em; color: rgba(255,255,255,0.70); margin-top: 6px; line-height: 1.3; }
-  .quick:hover { border-color: rgba(0,200,255,0.35); background: rgba(0,200,255,0.06); }
+  .quick .k { font-family: 'Rajdhani', sans-serif; font-size: 0.82em; font-weight: 700; letter-spacing: 0.5px; color: var(--text); text-transform: uppercase; }
+  .quick .v { font-size: 0.8em; color: var(--text-dim); margin-top: 3px; line-height: 1.35; }
+  .quick:hover { border-color: rgba(56,189,248,0.4); background: rgba(56,189,248,0.06); }
 
   .update-banner {
-    margin-top: 6px;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 0.82em;
+    margin-top: 4px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.78em;
+    font-weight: 500;
     line-height: 1.35;
-    color: rgba(255,255,255,0.70);
+    color: var(--text-dim);
   }
-  .update-banner .k { color: var(--yellow); }
+  .update-banner .k { color: var(--yellow); font-weight: 700; }
   .update-banner .v { color: var(--red); }
 
   .map-legend {
@@ -189,13 +239,33 @@
       Cargando detecciones...
     </div>
 
-    <div style="font-family:'Orbitron'; font-size:0.65em; color:var(--cyan); letter-spacing:2px; margin-bottom:6px;">VERIFICACIÓN INDEPENDIENTE</div>
-    <div style="font-size:0.92em; line-height:1.7; margin-bottom:10px;">
-      <a href="https://www.aljazeera.com/news/2026/3/27/wildlife-killed-reefs-damaged-in-active-gulf-of-mexico-oil-spill" target="_blank" rel="noreferrer" style="color:var(--cyan); text-decoration:none; border-bottom:1px dotted var(--cyan);">Al Jazeera: Wildlife killed, reefs damaged</a><br>
-      <a href="https://abcnews.com/International/wireStory/gulf-mexico-oil-spill-spread-hundreds-miles-killed-131454235" target="_blank" rel="noreferrer" style="color:var(--cyan); text-decoration:none; border-bottom:1px dotted var(--cyan);">ABC News: Spill spread hundreds of miles</a><br>
-      <a href="https://verificado.com.mx/derrame-golfo-de-mx-un-desastre-ambiental-envuelto-en-opacidad-y-desinformacion-cruzada/" target="_blank" rel="noreferrer" style="color:var(--cyan); text-decoration:none; border-bottom:1px dotted var(--cyan);">Verificado: Opacidad y desinformación</a><br>
-      <a href="https://es.mongabay.com/2025/02/derrames-impunes-imagenes-satelitales-revelan-derrames-petroleo-no-reportados-golfo-de-mexico/" target="_blank" rel="noreferrer" style="color:var(--cyan); text-decoration:none; border-bottom:1px dotted var(--cyan);">Mongabay: Derrames impunes</a><br>
-      <a href="https://www.milenio.com/comunidad/mapa-ciudadano-reportar-derrame-crudo-golfo-mexico" target="_blank" rel="noreferrer" style="color:var(--green); text-decoration:none; border-bottom:1px dotted var(--green);">Mapa ciudadano (Red Corredor Arrecifal)</a>
+    <div style="font-family:'Orbitron'; font-size:0.65em; color:var(--cyan); letter-spacing:2px; margin-bottom:10px;">COBERTURA VERIFICADA</div>
+    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;">
+
+      <div style="border-left:3px solid var(--cyan); padding:7px 10px; background:rgba(56,189,248,0.05); border-radius:0 3px 3px 0;">
+        <div style="font-size:0.75em; color:var(--text-dim); margin-bottom:3px;">27 MAR 2026 · AL JAZEERA</div>
+        <a href="https://www.aljazeera.com/news/2026/3/27/wildlife-killed-reefs-damaged-in-active-gulf-of-mexico-oil-spill" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.9em; line-height:1.4; display:block;">Fauna muerta, arrecifes dañados en derrame activo del Golfo</a>
+      </div>
+
+      <div style="border-left:3px solid var(--cyan); padding:7px 10px; background:rgba(56,189,248,0.05); border-radius:0 3px 3px 0;">
+        <div style="font-size:0.75em; color:var(--text-dim); margin-bottom:3px;">MAR 2026 · ABC NEWS</div>
+        <a href="https://abcnews.com/International/wireStory/gulf-mexico-oil-spill-spread-hundreds-miles-killed-131454235" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.9em; line-height:1.4; display:block;">Derrame se extiende cientos de millas, mata fauna marina</a>
+      </div>
+
+      <div style="border-left:3px solid var(--yellow); padding:7px 10px; background:rgba(251,191,36,0.04); border-radius:0 3px 3px 0;">
+        <div style="font-size:0.75em; color:var(--text-dim); margin-bottom:3px;">MAR 2026 · VERIFICADO.COM.MX</div>
+        <a href="https://verificado.com.mx/derrame-golfo-de-mx-un-desastre-ambiental-envuelto-en-opacidad-y-desinformacion-cruzada/" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.9em; line-height:1.4; display:block;">Desastre ambiental envuelto en opacidad y desinformación cruzada</a>
+      </div>
+
+      <div style="border-left:3px solid var(--green); padding:7px 10px; background:rgba(52,211,153,0.04); border-radius:0 3px 3px 0;">
+        <div style="font-size:0.75em; color:var(--text-dim); margin-bottom:3px;">FEB 2025 · MONGABAY</div>
+        <a href="https://es.mongabay.com/2025/02/derrames-impunes-imagenes-satelitales-revelan-derrames-petroleo-no-reportados-golfo-de-mexico/" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.9em; line-height:1.4; display:block;">Imágenes satelitales revelan derrames no reportados — patrón previo documentado</a>
+      </div>
+
+      <div style="border-left:3px solid rgba(255,255,255,0.2); padding:7px 10px; background:rgba(255,255,255,0.03); border-radius:0 3px 3px 0;">
+        <div style="font-size:0.75em; color:var(--text-dim); margin-bottom:3px;">ACTIVO · RED CORREDOR ARRECIFAL</div>
+        <a href="https://www.milenio.com/comunidad/mapa-ciudadano-reportar-derrame-crudo-golfo-mexico" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.9em; line-height:1.4; display:block;">Mapa ciudadano de reportes en campo</a>
+      </div>
     </div>
 
     <div style="font-family:'Orbitron'; font-size:0.65em; color:rgba(255,255,255,0.5); letter-spacing:2px; margin-bottom:6px;">DATOS EN VIVO</div>
@@ -232,6 +302,12 @@
     <div style="position:absolute; top:10px; left:10px; z-index:1000; background:rgba(9,16,32,0.88); border:1px solid rgba(255,43,85,0.4); padding:6px 12px; font-family:'Orbitron'; font-size:0.65em; color:rgba(255,255,255,0.9); letter-spacing:1px;">
       DETECCIONES SAR • SENTINEL-1 + ML (SkyTruth Cerulean)
     </div>
+    <!-- Windy PiP overlay -->
+    <div class="windy-pip">
+      <div class="windy-pip-label">CORRIENTES · WINDY.COM</div>
+      <iframe src="https://embed.windy.com/embed2.html?lat=21&lon=-93&zoom=6&overlay=currents&marker=true" style="margin-top:22px; width:100%; height:calc(100% - 22px);"></iframe>
+    </div>
+
     <div class="map-legend" id="map-legend">
       <div style="font-family:'Orbitron'; font-size:0.75em; letter-spacing:2px; color:rgba(255,255,255,0.9);">TRAYECTORIA</div>
       <div style="margin-top:6px;">Línea/puntos calculados desde fuente confirmada (Coatzacoalcos, derrame activo 2026-03).</div>
@@ -268,52 +344,49 @@
     </div>
   </div>
 
-  <div class="panel map-container" style="grid-column:3;">
-    <iframe style="width:100%; height:100%; border:none;"
-      src="https://embed.windy.com/embed2.html?lat=21&lon=-93&zoom=6&overlay=currents&marker=true"></iframe>
-    <div style="position:absolute; bottom:10px; left:10px; z-index:1000; background:rgba(9,16,32,0.85); border:1px solid rgba(255,204,0,0.3); padding:5px 8px; font-family:'Share Tech Mono'; font-size:0.7em; color:rgba(255,255,255,0.7); max-width:220px;">
-      Visualización independiente (Windy.com). NO alimenta el modelo de trayectoria.
+  <!-- BARRA INFERIOR 1: datos en vivo -->
+  <div class="panel bar-data">
+    <div class="bar-kpi">
+      <div class="k">ETA Impacto</div>
+      <div class="v" id="eta-bottom" style="color:var(--yellow);">N/D</div>
     </div>
+    <div class="bar-kpi">
+      <div class="k">Viento</div>
+      <div class="v" id="wind-info-bottom" style="color:var(--cyan);">---</div>
+    </div>
+    <div class="bar-kpi">
+      <div class="k">Corriente HYCOM</div>
+      <div class="v" id="current-info-bottom" style="color:var(--text);">---</div>
+    </div>
+    <div class="bar-kpi">
+      <div class="k">Modelo</div>
+      <div class="v" id="model-info-bottom" style="color:var(--text-dim); font-size:0.85em;">---</div>
+    </div>
+    <div class="bar-kpi" style="margin-left:auto; border-right:none;">
+      <div class="k">Última actualización</div>
+      <div class="v" id="last-update" style="color:var(--green); font-size:0.88em;">---</div>
+    </div>
+    <div id="stale-warning-bottom" style="color:var(--yellow); font-size:0.82em; display:none;"></div>
   </div>
 
-  <div class="panel panel-bottom">
-    <div style="padding:20px; border-right:1px solid var(--border);">
-      <div class="s-head cyan" style="margin:0; border:none;">FUENTES DE DATOS</div>
-      <div style="font-size:1.1em; color:#fff; font-family:'Orbitron'; font-weight:900; margin-top:10px;">
-        SAR: <span style="color:var(--cyan)">SENTINEL-1 C-BAND</span>
-      </div>
-      <div style="font-size:0.95em; color:rgba(255,255,255,0.74); margin-top:8px; line-height:1.5;">
-        Detección automática de manchas vía ML (U-Net) sobre imágenes Sentinel-1 VV. Procesado por <a href="https://cerulean.skytruth.org/" target="_blank" rel="noreferrer" style="color:var(--cyan);">SkyTruth Cerulean</a>. Viento: Open-Meteo. Corrientes: HYCOM/ERDDAP.
-      </div>
-    </div>
-    <div style="padding:20px; display:flex; flex-direction:column; justify-content:center;">
-       <div style="font-size:1.25em; color:var(--yellow); font-family:'Orbitron'; font-weight:900;">ETA IMPACTO: <span id="eta-bottom">N/D</span></div>
-       <div id="wind-info-bottom" style="font-family:'Share Tech Mono'; color:var(--cyan); font-size:1.1em; margin-top:10px;">DIR: --- | VEL: ---</div>
-       <div id="current-info-bottom" style="font-family:'Share Tech Mono'; color:rgba(255,255,255,0.72); font-size:0.95em; margin-top:6px;">CORRIENTE (HYCOM): ---</div>
-       <div id="stale-warning-bottom" style="font-family:'Share Tech Mono'; color:var(--yellow); font-size:0.82em; margin-top:4px; display:none;"></div>
-       <div id="model-info-bottom" style="font-family:'Share Tech Mono'; color:rgba(255,255,255,0.68); font-size:0.92em; margin-top:6px;">MODELO: ---</div>
-       <div class="quick-grid">
-         <a class="quick" href="https://cerulean.skytruth.org/" target="_blank" rel="noreferrer">
-           <div class="k">SKYTRUTH (SAR+IA)</div>
-           <div class="v">Abrir Cerulean • manchas potenciales</div>
-         </a>
-         <a class="quick" href="https://skytruth.org/cerulean-methods/" target="_blank" rel="noreferrer">
-           <div class="k">MÉTODOS</div>
-           <div class="v">Cómo detecta (U‑Net en Sentinel‑1 VV)</div>
-         </a>
-         <a class="quick" href="https://apps.sentinel-hub.com/eo-browser/?zoom=7&lat=19.0&lng=-92.5&themeId=DEFAULT-THEME&datasetId=S1_AWS_IW_VVVH" target="_blank" rel="noreferrer">
-           <div class="k">SENTINEL‑1 (SAR)</div>
-           <div class="v">EO Browser • Campeche</div>
-         </a>
-         <a class="quick" href="https://apps.sentinel-hub.com/eo-browser/?zoom=7&lat=19.0&lng=-92.5&themeId=DEFAULT-THEME&datasetId=S2L2A" target="_blank" rel="noreferrer">
-           <div class="k">SENTINEL‑2</div>
-           <div class="v">EO Browser • Campeche</div>
-         </a>
-       </div>
-       <div style="margin-top:8px; font-family:'Share Tech Mono'; color:rgba(255,255,255,0.62); font-size:0.85em;">
-         Corrientes (HYCOM): https://www.hycom.org/
-       </div>
-    </div>
+  <!-- BARRA INFERIOR 2: fuentes y accesos rápidos -->
+  <div class="panel bar-sources">
+    <a class="quick" href="https://cerulean.skytruth.org/" target="_blank" rel="noreferrer">
+      <div class="k">SKYTRUTH CERULEAN</div>
+      <div class="v">SAR + IA · manchas activas</div>
+    </a>
+    <a class="quick" href="https://skytruth.org/cerulean-methods/" target="_blank" rel="noreferrer">
+      <div class="k">METODOLOGÍA</div>
+      <div class="v">U-Net · Sentinel-1 VV</div>
+    </a>
+    <a class="quick" href="https://apps.sentinel-hub.com/eo-browser/?zoom=7&lat=19.0&lng=-92.5&themeId=DEFAULT-THEME&datasetId=S1_AWS_IW_VVVH" target="_blank" rel="noreferrer">
+      <div class="k">SENTINEL-1 SAR</div>
+      <div class="v">EO Browser · Campeche</div>
+    </a>
+    <a class="quick" href="https://www.hycom.org/" target="_blank" rel="noreferrer">
+      <div class="k">HYCOM / NOAA</div>
+      <div class="v">Corrientes oceánicas en vivo</div>
+    </a>
   </div>
 </div>
 
