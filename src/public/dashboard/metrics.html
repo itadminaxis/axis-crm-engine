@@ -459,7 +459,6 @@
             <th>Nombre</th>
             <th>Email / Teléfono</th>
             <th>Fuente</th>
-            <th>Score</th>
             <th>Estado</th>
             <th>Ingresado</th>
           </tr>
@@ -685,16 +684,14 @@
       return;
     }
     leads.forEach(l => {
-      const status = (l.ai_status || 'none').toLowerCase();
-      const score  = l.ai_score != null ? parseFloat(l.ai_score).toFixed(0) : '—';
+      const status = (l.status || 'none').toLowerCase();
       const date   = l.created_at ? new Date(l.created_at).toLocaleDateString('es-MX') : '—';
       tbody.innerHTML += `
         <tr>
           <td>${l.nombre || '—'}</td>
           <td style="color:var(--muted)">${l.email || l.phone || '—'}</td>
           <td>${l.source || '—'}</td>
-          <td><span class="score-badge ${status}">${score}</span></td>
-          <td><span class="score-badge ${status}">${(l.ai_status || '—')}</span></td>
+          <td><span class="score-badge ${status}">${l.status || '—'}</span></td>
           <td style="color:var(--muted)">${date}</td>
         </tr>`;
     });

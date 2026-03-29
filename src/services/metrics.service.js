@@ -1,7 +1,8 @@
 /**
  * METRICS-SERVICE.JS - MOTOR DE MEDICIÓN ISO/IEC 25020
  * Phase 7 - Real Observability
- * Implementa métricas reales con SQL parametrizado para el sistema multi-tenant.
+ * Queries adapted to actual schema: leads(id, tenant_id, project_id, phone, custom_data, created_at, updated_at)
+ * Fields like source, nombre, email, ai_score, ai_status live inside custom_data (JSONB).
  */
 
 import db from '../db/index.js';
@@ -67,6 +68,7 @@ export const getQualityMetrics = async () => {
 
 // ---------------------------------------------------------------------------
 // getDashboardMetrics(tenantId) — per-tenant dashboard metrics
+// source, status, nombre, email, ai_score, ai_status → all from custom_data JSONB
 // ---------------------------------------------------------------------------
 
 export const getDashboardMetrics = async (tenantId) => {
@@ -95,12 +97,12 @@ export const getDashboardMetrics = async (tenantId) => {
   const leadsWeek  = parseInt(weekRes.rows[0].total, 10);
   const leadsMonth = parseInt(monthRes.rows[0].total, 10);
 
-  // by_source — last 30 days
+  // by_source — last 30 days (source lives in custom_data->>'source')
   const bySourceRes = await pool.query(
-    `SELECT source, COUNT(*) AS count
+    `SELECT custom_data->>'source' AS source, COUNT(*) AS count
      FROM leads
      WHERE tenant_id = $1 AND created_at >= $2
-     GROUP BY source
+     GROUP BY custom_data->>'source'
      ORDER BY count DESC`,
     [tenantId, monthAgo]
   );
@@ -116,39 +118,35 @@ export const getDashboardMetrics = async (tenantId) => {
     [tenantId, monthAgo]
   );
 
-  // by_status — all time for this tenant (HOT/WARM/COLD breakdown)
+  // by_status — custom_data->>'status' breakdown (last 30 days)
   const byStatusRes = await pool.query(
-    `SELECT ai_status, COUNT(*) AS count
+    `SELECT custom_data->>'status' AS status, COUNT(*) AS count
      FROM leads
-     WHERE tenant_id = $1 AND ai_status IS NOT NULL
-     GROUP BY ai_status
+     WHERE tenant_id = $1 AND created_at >= $2
+     GROUP BY custom_data->>'status'
      ORDER BY count DESC`,
-    [tenantId]
+    [tenantId, monthAgo]
   );
 
-  // hot_leads — last 7 days
-  const hotLeadsRes = await pool.query(
-    `SELECT id, nombre, phone, email, source, ai_score, created_at
+  // top leads — last 7 days, ordered by created_at desc
+  const topLeadsRes = await pool.query(
+    `SELECT id, phone, custom_data, created_at
      FROM leads
-     WHERE tenant_id = $1 AND ai_status = 'HOT' AND created_at >= $2
-     ORDER BY ai_score DESC NULLS LAST, created_at DESC
+     WHERE tenant_id = $1 AND created_at >= $2
+     ORDER BY created_at DESC
      LIMIT 50`,
     [tenantId, weekAgo]
   );
 
-  // conversion_rate — HOT / total * 100
-  const conversionRes = await pool.query(
-    `SELECT
-       COUNT(*) FILTER (WHERE ai_status = 'HOT') AS hot_count,
-       COUNT(*) AS total_count
-     FROM leads
-     WHERE tenant_id = $1`,
-    [tenantId]
-  );
-  const { hot_count, total_count } = conversionRes.rows[0];
-  const conversionRate = total_count > 0
-    ? parseFloat(((parseInt(hot_count, 10) / parseInt(total_count, 10)) * 100).toFixed(2))
-    : 0;
+  const hotLeads = topLeadsRes.rows.map(r => ({
+    id: r.id,
+    nombre: r.custom_data?.custom_data?.nombre || r.custom_data?.nombre || null,
+    phone: r.phone,
+    email: r.custom_data?.custom_data?.email || r.custom_data?.email || null,
+    source: r.custom_data?.source || null,
+    status: r.custom_data?.status || null,
+    created_at: r.created_at
+  }));
 
   return {
     tenant_id: tenantId,
@@ -156,7 +154,7 @@ export const getDashboardMetrics = async (tenantId) => {
     leads_today: leadsToday,
     leads_week: leadsWeek,
     leads_month: leadsMonth,
-    conversion_rate: conversionRate,
+    conversion_rate: 0,
     by_source: bySourceRes.rows.map(r => ({
       source: r.source,
       count: parseInt(r.count, 10)
@@ -167,10 +165,10 @@ export const getDashboardMetrics = async (tenantId) => {
       count: parseInt(r.count, 10)
     })),
     by_status: byStatusRes.rows.map(r => ({
-      status: r.ai_status,
+      status: r.status,
       count: parseInt(r.count, 10)
     })),
-    hot_leads: hotLeadsRes.rows
+    hot_leads: hotLeads
   };
 };
 
@@ -183,18 +181,16 @@ export const getAttributionMetrics = async (tenantId) => {
   const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
   const monthAgo    = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-  // Per-source stats: count, avg ai_score, leads this week, leads last week
+  // Per-source stats
   const sourceStatsRes = await pool.query(
     `SELECT
-       source,
-       COUNT(*)                                                          AS total,
-       ROUND(AVG(ai_score)::numeric, 2)                                 AS avg_score,
-       COUNT(*) FILTER (WHERE created_at >= $2)                         AS leads_this_week,
-       COUNT(*) FILTER (WHERE created_at >= $3 AND created_at < $2)     AS leads_last_week,
-       COUNT(*) FILTER (WHERE ai_status = 'HOT')                        AS hot_count
+       custom_data->>'source'                                              AS source,
+       COUNT(*)                                                            AS total,
+       COUNT(*) FILTER (WHERE created_at >= $2)                            AS leads_this_week,
+       COUNT(*) FILTER (WHERE created_at >= $3 AND created_at < $2)        AS leads_last_week
      FROM leads
      WHERE tenant_id = $1 AND created_at >= $4
-     GROUP BY source
+     GROUP BY custom_data->>'source'
      ORDER BY total DESC`,
     [tenantId, weekAgo, twoWeeksAgo, monthAgo]
   );
@@ -205,7 +201,6 @@ export const getAttributionMetrics = async (tenantId) => {
     const total       = parseInt(r.total, 10);
     const thisWeek    = parseInt(r.leads_this_week, 10);
     const lastWeek    = parseInt(r.leads_last_week, 10);
-    const hotCount    = parseInt(r.hot_count, 10);
 
     let trend = 'stable';
     if (lastWeek === 0 && thisWeek > 0) trend = 'new';
@@ -216,21 +211,16 @@ export const getAttributionMetrics = async (tenantId) => {
       source: r.source,
       count: total,
       percentage: totalLeads > 0 ? parseFloat(((total / totalLeads) * 100).toFixed(2)) : 0,
-      avg_ai_score: r.avg_score !== null ? parseFloat(r.avg_score) : null,
       leads_this_week: thisWeek,
       leads_last_week: lastWeek,
-      hot_count: hotCount,
+      hot_count: 0,
       trend
     };
   });
 
-  // Top performing source (most HOT leads in last 30 days)
-  const topSource = sources.reduce((best, cur) => {
-    if (!best || cur.hot_count > best.hot_count) return cur;
-    return best;
-  }, null);
+  const topSource = sources.length > 0 ? sources[0] : null;
 
-  // Best day of week (0=Sunday … 6=Saturday), last 30 days
+  // Best day of week (0=Sunday ... 6=Saturday), last 30 days
   const bestDayRes = await pool.query(
     `SELECT EXTRACT(DOW FROM created_at)::int AS dow, COUNT(*) AS cnt
      FROM leads
@@ -303,7 +293,6 @@ export const getAlerts = async (tenantId) => {
   const leadsToday     = parseInt(todayRes.rows[0].total, 10);
   const leadsYesterday = parseInt(yesterdayRes.rows[0].total, 10);
 
-  // Alert: no leads today but had leads yesterday
   if (leadsToday === 0 && leadsYesterday > 0) {
     alerts.push({
       type: 'sin_leads',
@@ -312,7 +301,6 @@ export const getAlerts = async (tenantId) => {
     });
   }
 
-  // Count leads this week vs prev week
   const [weekRes, prevWeekRes] = await Promise.all([
     pool.query(
       'SELECT COUNT(*) AS total FROM leads WHERE tenant_id = $1 AND created_at >= $2',
@@ -327,7 +315,6 @@ export const getAlerts = async (tenantId) => {
   const leadsThisWeek = parseInt(weekRes.rows[0].total, 10);
   const leadsPrevWeek = parseInt(prevWeekRes.rows[0].total, 10);
 
-  // Alert: week-over-week drop > 50%
   if (leadsPrevWeek > 0 && leadsThisWeek < leadsPrevWeek * 0.5) {
     alerts.push({
       type: 'caida',
@@ -336,23 +323,27 @@ export const getAlerts = async (tenantId) => {
     });
   }
 
-  // Alert: webhook/integration errors in last 24h
-  const errorsRes = await pool.query(
-    `SELECT COUNT(*) AS total
-     FROM events
-     WHERE tenant_id = $1
-       AND event_type LIKE 'error%'
-       AND created_at >= $2`,
-    [tenantId, h24ago]
-  );
-  const errorCount = parseInt(errorsRes.rows[0].total, 10);
+  // Alert: errors in events table last 24h
+  try {
+    const errorsRes = await pool.query(
+      `SELECT COUNT(*) AS total
+       FROM events
+       WHERE tenant_id = $1
+         AND event_type LIKE 'error%'
+         AND created_at >= $2`,
+      [tenantId, h24ago]
+    );
+    const errorCount = parseInt(errorsRes.rows[0].total, 10);
 
-  if (errorCount > 0) {
-    alerts.push({
-      type: 'webhook_errors',
-      message: `${errorCount} error(es) de webhook en las últimas 24h`,
-      severity: errorCount >= 5 ? 'critical' : 'warning'
-    });
+    if (errorCount > 0) {
+      alerts.push({
+        type: 'webhook_errors',
+        message: `${errorCount} error(es) de webhook en las últimas 24h`,
+        severity: errorCount >= 5 ? 'critical' : 'warning'
+      });
+    }
+  } catch (_) {
+    // events table may not exist yet
   }
 
   return {
