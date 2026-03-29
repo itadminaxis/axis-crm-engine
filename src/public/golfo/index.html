@@ -290,7 +290,7 @@
     <!-- BLOQUE 2: Contexto azul — qué es esto -->
     <div class="sec sec-blue" style="margin-bottom:14px;">
       <div class="sec-label" style="color:var(--cyan);" data-i18n="what">What is this monitor?</div>
-      <div style="font-size:0.92em; line-height:1.6; color:rgba(255,255,255,0.85);" data-i18n="what-body" data-html="1">
+      <div style="font-size:0.92em; line-height:1.6; color:rgba(255,255,255,0.85);" id="what-body">
         Independent satellite tracking of an active oil spill. Monitoring this event is a public responsibility: it affects coastal fishing and tourism economies, protected marine wildlife, and seven natural reserves. Verifiable data, open source.
       </div>
     </div>
@@ -298,7 +298,7 @@
     <!-- BLOQUE 3: Cuerpo neutro — hechos documentados -->
     <div class="sec sec-body" style="margin-bottom:14px;">
       <div class="sec-label" style="color:rgba(255,255,255,0.5);" data-i18n="facts">Documented facts</div>
-      <div style="font-size:0.95em; line-height:1.65; color:rgba(255,255,255,0.88);" data-i18n="facts-body" data-html="1">
+      <div style="font-size:0.95em; line-height:1.65; color:rgba(255,255,255,0.88);" id="facts-body">
         <b style="color:#fff;">630+ km of coastline</b> across four states. SEMAR identified three sources: unidentified vessel near <b>Coatzacoalcos</b>, nearby natural seeps, and emanations at <b>Cantarell</b>. 430 tonnes of crude recovered. Sea turtles and a manatee killed. Seven natural reserves affected.
       </div>
     </div>
@@ -1109,11 +1109,13 @@
     btn.textContent = currentLang === 'en' ? 'ES' : 'EN';
     document.querySelectorAll('[data-i18n]').forEach(function(el) {
       var key = el.getAttribute('data-i18n');
-      if (i18n[key]) {
-        if (el.getAttribute('data-html') === '1') el.innerHTML = i18n[key][currentLang];
-        else el.textContent = i18n[key][currentLang];
-      }
+      if (i18n[key]) el.textContent = i18n[key][currentLang];
     });
+    // HTML content blocks (have <b> tags)
+    var wb = document.getElementById('what-body');
+    if (wb) wb.innerHTML = i18n['what-body'][currentLang];
+    var fb = document.getElementById('facts-body');
+    if (fb) fb.innerHTML = i18n['facts-body'][currentLang];
     // Re-render timeline
     sarLoaded = false;
     loadSarDetections();
