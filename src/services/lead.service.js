@@ -3,6 +3,7 @@ import { tenantStorage } from '../middleware/tenant.middleware.js';
 import { logEvent } from './event.service.js';
 import { fireCallbacks } from './callback.service.js';
 import { broadcast } from './sse.service.js';
+import { notifyNewLead } from './notify.service.js';
 import { quickAddJob } from 'graphile-worker';
 import dotenv from 'dotenv';
 
@@ -86,6 +87,33 @@ export const upsertLead = async (leadData) => {
 
   // FASE 4: SSE broadcast a dashboards conectados en tiempo real
   broadcast(tenantId, eventType, { lead_id: lead.id, phone, source, project_id });
+
+  // NOTIFICACION: email al admin cuando entra un lead nuevo
+  if (isNew) {
+    let projectName = null;
+    let tenantName  = null;
+    if (project_id) {
+      try {
+        const pRes = await db.query(
+          `SELECT p.name as project_name, t.name as tenant_name
+           FROM projects p JOIN tenants t ON t.id = p.tenant_id
+           WHERE p.id = $1`, [project_id]
+        );
+        if (pRes.rows.length > 0) {
+          projectName = pRes.rows[0].project_name;
+          tenantName  = pRes.rows[0].tenant_name;
+        }
+      } catch (_) {}
+    }
+    notifyNewLead({
+      phone,
+      source,
+      projectName,
+      tenantName,
+      leadId:     lead.id,
+      customData: lead.custom_data
+    }).catch(() => {});
+  }
 
   // FASE 4: Callback HTTP al X-Wing (si tiene URLs configuradas)
   if (project_id) {
