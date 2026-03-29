@@ -452,7 +452,13 @@
 
     <!-- HOT LEADS TABLE -->
     <div class="panel">
-      <div class="panel-title">Hot Leads — Top 10 por score AI</div>
+      <div class="panel-title" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>Leads recientes</span>
+        <a id="export-link" href="#" onclick="downloadCSV(event)"
+           style="font-size:12px;color:var(--naranja);text-decoration:none;border:1px solid var(--naranja);padding:4px 12px;border-radius:6px;">
+          Descargar CSV del mes
+        </a>
+      </div>
       <table class="data-table">
         <thead>
           <tr>
@@ -759,6 +765,30 @@
   function setText(id, val) {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
+  }
+
+  function downloadCSV(e) {
+    e.preventDefault();
+    const now   = new Date();
+    const from  = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0,10);
+    const to    = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0,10);
+    const qs    = TENANT_ID ? `&tenant_id=${TENANT_ID}` : '';
+    const url   = `${BASE_URL}/leads/export?from=${from}&to=${to}${qs}`;
+    const a     = document.createElement('a');
+    a.href      = url;
+    a.setAttribute('download', `leads_${from}_${to}.csv`);
+    // peticion autenticada
+    fetch(url, { headers: { 'x-api-key': API_KEY } })
+      .then(r => r.blob())
+      .then(blob => {
+        const blobUrl = URL.createObjectURL(blob);
+        a.href = blobUrl;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+      })
+      .catch(err => alert('Error al descargar: ' + err.message));
   }
 </script>
 </body>
