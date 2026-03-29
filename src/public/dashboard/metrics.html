@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Axis — Dashboard de Métricas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --ink:     #0A0A0A;
+      --char:    #111;
+      --panel:   #161616;
+      --border:  rgba(255,255,255,0.06);
+      --cream:   #FFF8F0;
+      --muted:   #888;
+      --rosa:    #FF2D7B;
+      --naranja: #FF6B2B;
+      --green:   #00E676;
+      --yellow:  #FFD600;
+      --red:     #FF3D00;
+      --blue:    #00B0FF;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--ink);
+      color: var(--cream);
+      min-height: 100vh;
+    }
+
+    /* ── AUTH ────────────────────────────────────────── */
+    #auth-screen {
+      position: fixed; inset: 0;
+      background: var(--ink);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 999;
+    }
+    .auth-card {
+      background: var(--char);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 48px 40px;
+      width: 420px;
+      text-align: center;
+    }
+    .auth-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--rosa), var(--naranja));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+    .auth-sub {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 32px;
+    }
+    .auth-field {
+      width: 100%;
+      background: #0a0a0a;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      color: var(--cream);
+      padding: 12px 14px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      margin-bottom: 12px;
+      transition: border-color .2s;
+    }
+    .auth-field:focus { outline: none; border-color: var(--rosa); }
+    .auth-field::placeholder { color: #444; }
+    .auth-btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--rosa), var(--naranja));
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: opacity .2s;
+    }
+    .auth-btn:hover { opacity: .85; }
+    .auth-err {
+      color: var(--red);
+      font-size: 13px;
+      margin-top: 12px;
+      min-height: 18px;
+    }
+
+    /* ── LAYOUT ──────────────────────────────────────── */
+    #dashboard { display: none; }
+
+    header {
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(10,10,10,.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px;
+      background: linear-gradient(135deg, var(--rosa), var(--naranja));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header-right {
+      display: flex; align-items: center; gap: 18px;
+    }
+    #refresh-status {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .pulse {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: .3; }
+    }
+    .logout-btn {
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+      padding: 5px 12px;
+      transition: border-color .2s, color .2s;
+    }
+    .logout-btn:hover { border-color: var(--rosa); color: var(--rosa); }
+
+    .main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 28px 24px 60px;
+    }
+
+    /* ── ALERTS BAR ───────────────────────────────────── */
+    #alerts-bar {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-bottom: 24px;
+    }
+    .alert-pill {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      border: 1px solid;
+    }
+    .alert-pill.critical {
+      background: rgba(255,61,0,.12);
+      border-color: rgba(255,61,0,.4);
+      color: #FF6E40;
+    }
+    .alert-pill.warning {
+      background: rgba(255,214,0,.10);
+      border-color: rgba(255,214,0,.3);
+      color: var(--yellow);
+    }
+    .alert-icon { font-size: 14px; }
+
+    /* ── KPI CARDS ───────────────────────────────────── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .kpi-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 22px;
+    }
+    .kpi-label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 10px;
+    }
+    .kpi-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .kpi-value.rosa    { color: var(--rosa); }
+    .kpi-value.naranja { color: var(--naranja); }
+    .kpi-value.green   { color: var(--green); }
+    .kpi-value.blue    { color: var(--blue); }
+    .kpi-value.yellow  { color: var(--yellow); }
+    .kpi-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* ── SECTION GRID ─────────────────────────────────── */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 1000px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 22px;
+    }
+    .panel-title {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 18px;
+    }
+
+    /* ── STATUS BADGES ───────────────────────────────── */
+    .status-grid {
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .status-row {
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; font-weight: 600;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot.hot    { background: var(--red); }
+    .dot.warm   { background: var(--yellow); }
+    .dot.cold   { background: var(--blue); }
+    .dot.none   { background: var(--muted); }
+    .status-count {
+      font-family: 'Syne', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .status-bar-wrap {
+      height: 4px;
+      background: #222;
+      border-radius: 4px;
+      margin-top: 10px;
+      overflow: hidden;
+      display: flex;
+    }
+    .status-bar-seg { height: 100%; }
+
+    /* ── TABLE ───────────────────────────────────────── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .data-table th {
+      color: var(--muted);
+      font-weight: 400;
+      text-align: left;
+      padding: 0 0 10px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table td {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .score-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .score-badge.hot    { background: rgba(255,61,0,.2);  color: #FF6E40; }
+    .score-badge.warm   { background: rgba(255,214,0,.15); color: var(--yellow); }
+    .score-badge.cold   { background: rgba(0,176,255,.15); color: var(--blue); }
+    .score-badge.none   { background: rgba(136,136,136,.15); color: var(--muted); }
+
+    .trend-up   { color: var(--green);  font-size: 13px; }
+    .trend-down { color: var(--red);    font-size: 13px; }
+    .trend-stab { color: var(--muted);  font-size: 13px; }
+    .trend-new  { color: var(--blue);   font-size: 13px; }
+
+    /* ── BEST TIME INSIGHT ───────────────────────────── */
+    .insight-row {
+      display: flex; gap: 14px; flex-wrap: wrap; margin-top: 16px;
+    }
+    .insight-chip {
+      background: #1a1a1a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 16px;
+      flex: 1; min-width: 140px;
+    }
+    .insight-chip .ic-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    .insight-chip .ic-val { font-size: 16px; font-weight: 600; color: var(--cream); }
+
+    /* ── SKELETON ────────────────────────────────────── */
+    .skeleton {
+      background: linear-gradient(90deg, #1a1a1a 25%, #222 50%, #1a1a1a 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 6px;
+      height: 36px;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    canvas { max-height: 220px; }
+  </style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">AXIS</div>
+    <div class="auth-sub">Dashboard de Métricas — Ingresa tus credenciales</div>
+    <input class="auth-field" type="text"       id="inp-base"     placeholder="URL del servidor" value="https://attractive-mindfulness-production.up.railway.app">
+    <input class="auth-field" type="password"  id="inp-apikey"   placeholder="x-api-key">
+    <input class="auth-field" type="text"       id="inp-tenant"   placeholder="tenant_id (opcional)">
+    <button class="auth-btn" onclick="doLogin()">Entrar al dashboard</button>
+    <div class="auth-err" id="auth-err"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <header>
+    <div class="logo">AXIS — Métricas</div>
+    <div class="header-right">
+      <div id="refresh-status"><div class="pulse"></div><span id="refresh-label">Cargando…</span></div>
+      <div class="logout-btn" onclick="doLogout()">Cerrar sesión</div>
+    </div>
+  </header>
+
+  <div class="main">
+
+    <!-- ALERTS -->
+    <div id="alerts-bar"></div>
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Leads hoy</div>
+        <div class="kpi-value rosa" id="kpi-today">—</div>
+        <div class="kpi-sub">desde las 00:00</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Leads 7 días</div>
+        <div class="kpi-value naranja" id="kpi-week">—</div>
+        <div class="kpi-sub">últimos 7 días</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Leads 30 días</div>
+        <div class="kpi-value yellow" id="kpi-month">—</div>
+        <div class="kpi-sub">últimos 30 días</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Tasa HOT</div>
+        <div class="kpi-value green" id="kpi-conv">—</div>
+        <div class="kpi-sub">leads calificados</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Top fuente</div>
+        <div class="kpi-value blue" id="kpi-topsrc" style="font-size:20px;margin-top:6px;">—</div>
+        <div class="kpi-sub">mayor volumen HOT</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Mejor día</div>
+        <div class="kpi-value blue" id="kpi-bestday" style="font-size:20px;margin-top:6px;">—</div>
+        <div class="kpi-sub" id="kpi-besthour">mejor hora: —</div>
+      </div>
+    </div>
+
+    <!-- ROW 1: Status donut + By Source chart -->
+    <div class="grid-2">
+
+      <div class="panel">
+        <div class="panel-title">Estado AI (últimos 30 días)</div>
+        <div style="display:flex; gap:24px; align-items:center; flex-wrap:wrap;">
+          <div style="width:200px; height:200px; flex-shrink:0;">
+            <canvas id="chart-status"></canvas>
+          </div>
+          <div class="status-grid" id="status-legend" style="flex:1"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Leads por fuente (30 días)</div>
+        <canvas id="chart-source"></canvas>
+      </div>
+
+    </div>
+
+    <!-- ROW 2: By project + Attribution table -->
+    <div class="grid-2">
+
+      <div class="panel">
+        <div class="panel-title">Leads por proyecto (30 días)</div>
+        <canvas id="chart-project"></canvas>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Atribución por fuente</div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Fuente</th>
+              <th>Total</th>
+              <th>%</th>
+              <th>Semana</th>
+              <th>Trend</th>
+              <th>HOT</th>
+            </tr>
+          </thead>
+          <tbody id="attr-tbody"></tbody>
+        </table>
+        <div class="insight-row" id="insights-row"></div>
+      </div>
+
+    </div>
+
+    <!-- HOT LEADS TABLE -->
+    <div class="panel">
+      <div class="panel-title">Hot Leads — Top 10 por score AI</div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Email / Teléfono</th>
+            <th>Fuente</th>
+            <th>Score</th>
+            <th>Estado</th>
+            <th>Ingresado</th>
+          </tr>
+        </thead>
+        <tbody id="hot-tbody"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ─── STATE ────────────────────────────────────────────────────────────────
+  let BASE_URL  = '';
+  let API_KEY   = '';
+  let TENANT_ID = '';
+  let charts    = {};
+  let refreshTimer;
+
+  const DAY_NAMES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const TREND_HTML = {
+    up:     '<span class="trend-up">▲ up</span>',
+    down:   '<span class="trend-down">▼ down</span>',
+    stable: '<span class="trend-stab">— stable</span>',
+    new:    '<span class="trend-new">✦ new</span>',
+  };
+
+  // ─── AUTH ─────────────────────────────────────────────────────────────────
+  async function doLogin() {
+    const base   = document.getElementById('inp-base').value.trim().replace(/\/+$/, '');
+    const key    = document.getElementById('inp-apikey').value.trim();
+    const tenant = document.getElementById('inp-tenant').value.trim();
+    if (!base) { showAuthErr('Ingresa la URL del servidor'); return; }
+    if (!key)  { showAuthErr('Ingresa tu API Key'); return; }
+
+    // quick validation — try hitting /metrics/dashboard
+    const url = base + (tenant ? `/metrics/dashboard?tenant_id=${tenant}` : '/metrics/dashboard');
+    try {
+      const r = await fetch(url, { headers: { 'x-api-key': key } });
+      if (!r.ok) { showAuthErr('Credenciales incorrectas (' + r.status + ')'); return; }
+    } catch (e) {
+      showAuthErr('Error de red: ' + e.message); return;
+    }
+
+    BASE_URL  = base;
+    API_KEY   = key;
+    TENANT_ID = tenant;
+    document.getElementById('auth-screen').style.display  = 'none';
+    document.getElementById('dashboard').style.display    = 'block';
+    loadAll();
+    refreshTimer = setInterval(loadAll, 60_000);
+  }
+
+  function doLogout() {
+    clearInterval(refreshTimer);
+    API_KEY = TENANT_ID = '';
+    destroyCharts();
+    document.getElementById('dashboard').style.display   = 'none';
+    document.getElementById('auth-screen').style.display = 'flex';
+    document.getElementById('inp-apikey').value = '';
+  }
+
+  function showAuthErr(msg) {
+    document.getElementById('auth-err').textContent = msg;
+  }
+
+  document.getElementById('inp-apikey').addEventListener('keydown', e => e.key === 'Enter' && doLogin());
+  document.getElementById('inp-tenant').addEventListener('keydown', e => e.key === 'Enter' && doLogin());
+
+  // ─── FETCH ────────────────────────────────────────────────────────────────
+  const headers = () => ({ 'x-api-key': API_KEY });
+  const qs      = () => TENANT_ID ? `?tenant_id=${TENANT_ID}` : '';
+
+  async function loadAll() {
+    document.getElementById('refresh-label').textContent = 'Actualizando…';
+    try {
+      const [dash, attr, alrt] = await Promise.all([
+        fetch(BASE_URL + '/metrics/dashboard' + qs(), { headers: headers() }).then(r => r.json()),
+        fetch(BASE_URL + '/metrics/attribution' + qs(), { headers: headers() }).then(r => r.json()),
+        fetch(BASE_URL + '/metrics/alerts' + qs(), { headers: headers() }).then(r => r.json()),
+      ]);
+      renderDashboard(dash);
+      renderAttribution(attr);
+      renderAlerts(alrt);
+      const now = new Date();
+      document.getElementById('refresh-label').textContent =
+        'Actualizado ' + now.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+      document.getElementById('refresh-label').textContent = 'Error al cargar';
+      console.error(e);
+    }
+  }
+
+  // ─── RENDER DASHBOARD ─────────────────────────────────────────────────────
+  function renderDashboard(d) {
+    setText('kpi-today', d.leads_today ?? '—');
+    setText('kpi-week',  d.leads_week  ?? '—');
+    setText('kpi-month', d.leads_month ?? '—');
+    setText('kpi-conv',  d.conversion_rate != null ? d.conversion_rate + '%' : '—');
+
+    // Status chart
+    const statuses = ['HOT','WARM','COLD',null];
+    const colors   = { HOT: '#FF3D00', WARM: '#FFD600', COLD: '#00B0FF', null: '#444' };
+    const labels   = { HOT: 'HOT', WARM: 'WARM', COLD: 'COLD', null: 'Sin clasificar' };
+    const totalLeads = d.leads_month || 1;
+
+    const byStatus = statuses.map(s => {
+      const found = (d.by_status || []).find(r => r.status === s);
+      return { status: s, count: found ? found.count : 0 };
+    }).filter(r => r.count > 0);
+
+    renderDonut('chart-status', byStatus.map(r => labels[r.status]),
+      byStatus.map(r => r.count), byStatus.map(r => colors[r.status]));
+
+    // Legend
+    const legend = document.getElementById('status-legend');
+    legend.innerHTML = '';
+    let totalShown = 0;
+    byStatus.forEach(r => totalShown += r.count);
+    byStatus.forEach(r => {
+      const pct = totalShown > 0 ? ((r.count / totalShown) * 100).toFixed(1) : 0;
+      legend.innerHTML += `
+        <div class="status-row">
+          <span class="status-badge"><span class="dot ${(r.status||'none').toLowerCase()}"></span>${labels[r.status]}</span>
+          <span class="status-count" style="color:${colors[r.status]}">${r.count}</span>
+        </div>
+        <div class="status-bar-wrap">
+          <div class="status-bar-seg" style="width:${pct}%;background:${colors[r.status]}"></div>
+        </div>`;
+    });
+
+    // By source bar
+    const sources = (d.by_source || []).sort((a,b) => b.count - a.count).slice(0, 10);
+    renderBar('chart-source', sources.map(r => r.source || '(vacío)'),
+      sources.map(r => r.count), 'var(--naranja)');
+
+    // By project bar
+    const projects = (d.by_project || []).sort((a,b) => b.count - a.count).slice(0, 10);
+    renderBar('chart-project', projects.map(r => r.project_name || r.project_id || '—'),
+      projects.map(r => r.count), 'var(--rosa)');
+
+    // Hot leads table
+    renderHotLeads(d.hot_leads || []);
+  }
+
+  // ─── RENDER ATTRIBUTION ───────────────────────────────────────────────────
+  function renderAttribution(a) {
+    setText('kpi-topsrc', a.top_performing_source || '—');
+
+    if (a.best_day_of_week) {
+      setText('kpi-bestday', DAY_NAMES[a.best_day_of_week.dow] || '—');
+    }
+    if (a.best_hour_of_day) {
+      const h = a.best_hour_of_day.hour;
+      document.getElementById('kpi-besthour').textContent =
+        `mejor hora: ${String(h).padStart(2,'0')}:00–${String(h+1).padStart(2,'0')}:00`;
+    }
+
+    const tbody = document.getElementById('attr-tbody');
+    tbody.innerHTML = '';
+    (a.sources || []).forEach(s => {
+      const trendHtml = TREND_HTML[s.trend] || '';
+      tbody.innerHTML += `
+        <tr>
+          <td>${s.source || '—'}</td>
+          <td>${s.count}</td>
+          <td style="color:var(--muted)">${s.percentage}%</td>
+          <td>${s.leads_this_week}</td>
+          <td>${trendHtml}</td>
+          <td><span class="score-badge hot">${s.hot_count}</span></td>
+        </tr>`;
+    });
+
+    // Insights chips
+    const row = document.getElementById('insights-row');
+    row.innerHTML = '';
+    if (a.best_day_of_week) {
+      row.innerHTML += `
+        <div class="insight-chip">
+          <div class="ic-label">Mejor día</div>
+          <div class="ic-val">${DAY_NAMES[a.best_day_of_week.dow]} · ${a.best_day_of_week.count} leads</div>
+        </div>`;
+    }
+    if (a.best_hour_of_day) {
+      const h = a.best_hour_of_day.hour;
+      row.innerHTML += `
+        <div class="insight-chip">
+          <div class="ic-label">Mejor hora</div>
+          <div class="ic-val">${String(h).padStart(2,'0')}:00 · ${a.best_hour_of_day.count} leads</div>
+        </div>`;
+    }
+    if (a.top_performing_source) {
+      row.innerHTML += `
+        <div class="insight-chip">
+          <div class="ic-label">Fuente top HOT</div>
+          <div class="ic-val">${a.top_performing_source}</div>
+        </div>`;
+    }
+  }
+
+  // ─── RENDER ALERTS ────────────────────────────────────────────────────────
+  function renderAlerts(a) {
+    const bar = document.getElementById('alerts-bar');
+    bar.innerHTML = '';
+    const list = a.alerts || [];
+    if (list.length === 0) return;
+    list.forEach(al => {
+      const icon = al.severity === 'critical' ? '🔴' : '⚠️';
+      bar.innerHTML += `
+        <div class="alert-pill ${al.severity}">
+          <span class="alert-icon">${icon}</span>
+          <span>${al.message}</span>
+        </div>`;
+    });
+  }
+
+  // ─── RENDER HOT LEADS ────────────────────────────────────────────────────
+  function renderHotLeads(leads) {
+    const tbody = document.getElementById('hot-tbody');
+    tbody.innerHTML = '';
+    if (!leads.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);padding:20px 0">Sin hot leads en este período</td></tr>';
+      return;
+    }
+    leads.forEach(l => {
+      const status = (l.ai_status || 'none').toLowerCase();
+      const score  = l.ai_score != null ? parseFloat(l.ai_score).toFixed(0) : '—';
+      const date   = l.created_at ? new Date(l.created_at).toLocaleDateString('es-MX') : '—';
+      tbody.innerHTML += `
+        <tr>
+          <td>${l.nombre || '—'}</td>
+          <td style="color:var(--muted)">${l.email || l.phone || '—'}</td>
+          <td>${l.source || '—'}</td>
+          <td><span class="score-badge ${status}">${score}</span></td>
+          <td><span class="score-badge ${status}">${(l.ai_status || '—')}</span></td>
+          <td style="color:var(--muted)">${date}</td>
+        </tr>`;
+    });
+  }
+
+  // ─── CHART HELPERS ────────────────────────────────────────────────────────
+  const CHART_DEFAULTS = {
+    color: '#FFF8F0',
+    font: { family: 'Outfit', size: 12 },
+  };
+  Chart.defaults.color = CHART_DEFAULTS.color;
+  Chart.defaults.font  = CHART_DEFAULTS.font;
+
+  function destroyCharts() {
+    Object.values(charts).forEach(c => c.destroy());
+    charts = {};
+  }
+
+  function renderDonut(id, labels, data, bgColors) {
+    const ctx = document.getElementById(id);
+    if (charts[id]) { charts[id].destroy(); }
+    charts[id] = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels,
+        datasets: [{ data, backgroundColor: bgColors, borderWidth: 0, hoverOffset: 6 }]
+      },
+      options: {
+        cutout: '68%',
+        plugins: { legend: { display: false }, tooltip: { callbacks: {
+          label: ctx => ` ${ctx.label}: ${ctx.raw}`
+        }}},
+        animation: { duration: 600 }
+      }
+    });
+  }
+
+  function renderBar(id, labels, data, color) {
+    const ctx = document.getElementById(id);
+    if (charts[id]) { charts[id].destroy(); }
+    charts[id] = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          data,
+          backgroundColor: color,
+          borderRadius: 6,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        indexAxis: data.length > 6 ? 'y' : 'x',
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#666' } },
+          y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#666' } },
+        },
+        animation: { duration: 500 }
+      }
+    });
+  }
+
+  // ─── UTILS ────────────────────────────────────────────────────────────────
+  function setText(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+</script>
+</body>
+</html>

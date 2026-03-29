@@ -57,7 +57,8 @@ app.use(cors({
     // Permitir requests sin origin (Postman, curl, server-to-server)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
-    callback(new Error('Bloqueado por CORS'));
+    // Permitir cualquier origen para el dashboard de métricas (auth via x-api-key)
+    callback(null, true);
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'x-api-key', 'x-project-token']
