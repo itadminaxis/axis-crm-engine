@@ -20,6 +20,7 @@ import linkedinRoutes from './routes/linkedin.route.js';
 import typeformRoutes from './routes/typeform.route.js';
 import emailInboundRoutes from './routes/email-inbound.route.js';
 import twitterAdsRoutes from './routes/twitter-ads.route.js';
+import adminMetricsRoutes from './routes/admin-metrics.route.js';
 import { tenantMiddleware, tenantStorage } from './middleware/tenant.middleware.js';
 import { errorMiddleware } from './middleware/error.middleware.js';
 import path from 'path';
@@ -162,6 +163,9 @@ app.use('/api/integrations/typeform', submitLimiter, typeformRoutes);
 app.use('/api/integrations/email', submitLimiter, emailInboundRoutes);
 // X (Twitter) Ads Lead Gen → ?token=PROJECT_TOKEN (CRC challenge + HMAC)
 app.use('/api/integrations/x-ads', submitLimiter, twitterAdsRoutes);
+
+// --- ADMIN METRICS (requiere API_SECRET) ---
+app.use('/api/admin/metrics', adminMetricsRoutes);
 
 // SSE: EventSource no soporta headers custom, convertir query param a header
 app.use('/stream/live', (req, res, next) => {

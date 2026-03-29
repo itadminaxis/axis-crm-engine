@@ -11,6 +11,7 @@
     "test:rls": "node tests/test-rls.js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
     "axios": "^1.14.0",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
