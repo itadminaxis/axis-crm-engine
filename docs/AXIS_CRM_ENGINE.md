@@ -4,7 +4,7 @@ propietario: Andres Abel Fuentes Esquivel
 servidor: https://attractive-mindfulness-production.up.railway.app
 base de datos: Railway PostgreSQL
 repositorio: github.com/itadminaxis/axis-crm-engine
-ultima actualizacion: 2026-03-29
+ultima actualizacion: 2026-03-29 (FASE 3 — digest mensual completado)
 
 ---
 
@@ -208,7 +208,7 @@ cuando cae un lead nuevo, el sistema manda un email automaticamente.
 
 ### variables de entorno necesarias
 RESEND_API_KEY=re_xxxxxx (obtener en resend.com, gratis hasta 3000 emails/mes)
-NOTIFY_EMAIL=tu@email.com (donde quieres recibir las alertas)
+NOTIFY_EMAIL=tu@email.com (donde quieres recibir las alertas — email global del admin)
 NOTIFY_FROM=Axis CRM <notificaciones@tudominio.com> (necesitas dominio verificado en resend)
 
 ### configurar resend
@@ -218,7 +218,7 @@ NOTIFY_FROM=Axis CRM <notificaciones@tudominio.com> (necesitas dominio verificad
 4. si no tienes dominio aun: usar onboarding@resend.dev (solo para pruebas, no para produccion)
 5. agregar RESEND_API_KEY y NOTIFY_EMAIL en railway > variables
 
-### que incluye el email de notificacion
+### que incluye el email de notificacion de lead nuevo
 - nombre del lead
 - telefono
 - email
@@ -226,6 +226,47 @@ NOTIFY_FROM=Axis CRM <notificaciones@tudominio.com> (necesitas dominio verificad
 - proyecto
 - tenant
 - lead id para referencia
+
+---
+
+## digest mensual por tenant
+
+el dia 1 de cada mes a las 8am cada cliente recibe un email con sus metricas del mes anterior.
+
+### activar para un cliente
+paso 1 — correr la migracion una sola vez en railway (psql o panel):
+```
+ALTER TABLE tenants ADD COLUMN IF NOT EXISTS notify_email TEXT;
+ALTER TABLE tenants ADD COLUMN IF NOT EXISTS digest_enabled BOOLEAN DEFAULT true;
+```
+
+paso 2 — asignar el email al tenant:
+```
+UPDATE tenants SET notify_email = 'cliente@ejemplo.com' WHERE name = 'Nombre del cliente';
+```
+
+paso 3 — asegurarte de que RESEND_API_KEY esta configurado en railway.
+
+### que incluye el digest
+- total de leads del mes con comparativa % vs mes anterior
+- promedio diario de leads
+- top 5 fuentes con conteos
+- top 5 proyectos con conteos
+- boton para abrir el dashboard
+
+### disparar manualmente para testing
+```
+curl -X POST https://attractive-mindfulness-production.up.railway.app/api/admin/metrics/digest/trigger \
+  -H "x-api-key: 5e481198eaf4236c0fdd9bfd880462a77bc7ae551e94f89c8413dce5b258c7ce" \
+  -H "Content-Type: application/json" \
+  -d '{"month": "2026-02"}'
+```
+si no mandas body, usa el mes anterior automaticamente.
+
+### desactivar digest para un tenant especifico
+```
+UPDATE tenants SET digest_enabled = false WHERE name = 'Nombre del cliente';
+```
 
 ---
 
@@ -249,7 +290,7 @@ panel visual de nodos y flujos. util para mostrar arquitectura.
 ## estructura de la base de datos
 
 tabla tenants
-id, name, api_key, managed_by, access_level, access_expires_at, branding, created_at, updated_at, active
+id, name, api_key, managed_by, access_level, access_expires_at, branding, notify_email, digest_enabled, created_at, updated_at, active
 
 tabla projects
 id, tenant_id, name, description, public_token, enable_ai_prescriptive, enable_blockchain_seal, enable_3d_immersive, enable_payments, enable_instant_response, config, created_at, updated_at
@@ -278,6 +319,19 @@ el worker (graphile-worker) ejecuta estas tareas cuando entra un lead:
 process-lead — tarea base, siempre activa
 semantic-analysis — analisis IA con Claude Haiku (si enable_ai_prescriptive = true)
 send-instant-response — respuesta automatica al prospecto (si enable_instant_response = true)
+
+cron mensual (automatico):
+
+monthly-digest — dia 1 de cada mes a las 8am hora Monterrey
+envia a cada tenant con notify_email configurado un reporte HTML con sus metricas del mes anterior:
+total de leads, top fuentes, top proyectos, comparativa vs mes anterior, promedio diario.
+solo se envia si el tenant tiene actividad (omite tenants sin leads).
+
+para disparar el digest manualmente (testing o reenvio):
+POST /api/admin/metrics/digest/trigger
+headers: x-api-key: {API_SECRET}
+body (opcional): { "month": "2026-02" }
+si no se especifica mes, usa el mes anterior automaticamente.
 
 el worker se inicia con: node src/worker.js
 en railway corre como proceso separado en el mismo repo
@@ -315,6 +369,8 @@ fase 7: observabilidad (metricas ISO/IEC 25020, dashboard, atribucion, alertas)
 dashboards: Centro de Mando (fleet.html), Dashboard de Metricas (metrics.html)
 meta webhook: refactorizado para Lead Ads + verificacion de firma + resolucion de tenant
 notificaciones: email en tiempo real via Resend cuando entra lead nuevo
+event log (soberania del dato): tabla events, audit trail, timeline por lead en station.html
+digest mensual automatico: cron graphile-worker, reporte HTML por tenant, trigger manual via API
 
 ---
 
@@ -322,22 +378,25 @@ notificaciones: email en tiempo real via Resend cuando entra lead nuevo
 
 alta prioridad (proximos)
 
-1. configurar variables de entorno en railway
-   META_APP_SECRET, META_PAGE_ACCESS_TOKEN, META_DEFAULT_PROJECT_TOKEN
-   RESEND_API_KEY, NOTIFY_EMAIL
-   sin esto meta webhook y notificaciones no funcionan en produccion
+1. configurar variables de entorno en railway (BLOQUEANTE para produccion)
+   META_APP_SECRET=
+   META_PAGE_ACCESS_TOKEN=
+   META_DEFAULT_PROJECT_TOKEN=531f7f7d8d3ed2925acbd97079f7c416
+   RESEND_API_KEY=
+   NOTIFY_EMAIL=
+   NOTIFY_FROM=
+   sin RESEND_API_KEY no salen notificaciones ni digest
 
-2. Looker Studio por cliente
+2. correr migration-005 en railway (una vez)
+   ALTER TABLE tenants ADD COLUMN IF NOT EXISTS notify_email TEXT;
+   ALTER TABLE tenants ADD COLUMN IF NOT EXISTS digest_enabled BOOLEAN DEFAULT true;
+   luego: UPDATE tenants SET notify_email = 'tu@email.com' WHERE name = 'tu tenant';
+
+3. Looker Studio por cliente
    conectar el postgres de railway directamente a looker studio via conector de google
    crear un reporte template con: leads por dia, por fuente, por proyecto, ultimos 30 dias
    compartir con el cliente via link. se actualiza solo.
    looker studio es gratis y es lo que usa el percentil 95
-
-3. email digest mensual automatizado
-   el dia 1 de cada mes el sistema manda un email HTML bonito a cada cliente
-   con sus metricas del mes: leads captados, fuentes, tendencia, top leads
-   incluye link de descarga del CSV completo del mes
-   implementar con graphile-worker (cron job mensual) + resend
 
 media prioridad
 
@@ -346,34 +405,25 @@ media prioridad
    ej: app.axiscrm.mx o crm.andresabel.com
    en railway: Settings > Networking > Custom Domain
 
-5. endpoint de descarga CSV
-   GET /leads/export?format=csv&from=2026-03-01&to=2026-03-31
-   requiere api key del tenant
-   devuelve CSV con todos los leads del periodo
-   este link va incluido en el email digest mensual
-
-6. tabla de notificacion en tenants
-   agregar columna notify_email a la tabla tenants
-   para que cada cliente pueda recibir sus propias notificaciones
-   hoy la notificacion solo llega a tu email (NOTIFY_EMAIL del .env)
-
-7. page de status publica
+5. page de status publica
    https://status.axiscrm.mx o similar
    muestra uptime del servidor, latencia, ultimos incidentes
    better stack o uptimerobot (gratis)
 
 baja prioridad
 
-8. documentacion API publica (swagger ya existe en /api-docs)
+6. documentacion API publica (swagger ya existe en /api-docs)
    mejorar descripciones y ejemplos para poder compartir con clientes tecnicos
 
-9. test suite mas completa
-   los tests actuales cubren el core pero no las integraciones
-   agregar tests para meta webhook, fleet, metricas
+7. rate limiting por tenant
+   hoy el rate limiting es global (100 req/min)
+   idealmente seria por tenant para evitar que un cliente afecte a otros
 
-10. rate limiting por tenant
-    hoy el rate limiting es global (100 req/min)
-    idealmente seria por tenant para evitar que un cliente afecte a otros
+ya resuelto (mover de pendientes)
+- CSV export: GET /leads/export?from=YYYY-MM-DD&to=YYYY-MM-DD (requiere x-api-key)
+- notify_email por tenant: migration-005 lista, falta correrla en railway
+- event log + timeline: completamente funcional (tabla events, GET /events, timeline en station.html)
+- digest mensual: completamente funcional, falta configurar RESEND_API_KEY y correr migration-005
 
 ---
 
@@ -423,7 +473,8 @@ src/worker.js — proceso de background con graphile-worker
 src/services/lead.service.js — upsert, getLeads, milestones, journey
 src/services/metrics.service.js — dashboard, attribution, alerts, quality
 src/services/fleet.service.js — onboarding, flota, cross-tenant access
-src/services/notify.service.js — notificaciones email via resend
+src/services/notify.service.js — notificaciones email de lead nuevo via resend
+src/services/event.service.js — audit trail, logEvent, getEvents, getEntityTimeline
 src/services/ai.service.js — analisis con claude haiku
 src/controllers/webhook.controller.js — meta lead ads y whatsapp
 src/routes/ — todos los endpoints organizados por dominio
@@ -433,6 +484,12 @@ src/public/dashboard/fleet.html — Centro de Mando
 src/public/dashboard/metrics.html — Dashboard de Metricas
 src/db/schema.sql — esquema de la base de datos
 src/db/migration-*.sql — migraciones aplicadas
+  migration-001-security.sql — RLS, indices de seguridad
+  migration-002-event-log.sql — tabla events
+  migration-003-fleet.sql — campos de flota en tenants
+  migration-004-fleet-levels.sql — niveles reseller, contractor, branding
+  migration-005-notify-email.sql — notify_email y digest_enabled por tenant
+src/tasks/monthly-digest.js — cron mensual de digest por tenant
 docs/AXIS_CRM_ENGINE.md — este archivo
 
 ---
