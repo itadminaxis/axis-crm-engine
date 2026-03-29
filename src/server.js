@@ -88,6 +88,7 @@ app.use(express.json({ limit: '100kb' })); // Limitar tamaño de payload
 // --- SERVIDORES ESTÁTICOS ---
 app.use('/shared', express.static(path.join(__dirname, 'public/shared')));
 app.use('/dashboard', express.static(path.join(__dirname, 'public/dashboard')));
+app.use('/golfo', express.static(path.join(__dirname, 'public/golfo')));
 app.get('/dashboard/canvas', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/dashboard/flow.html'));
 });
