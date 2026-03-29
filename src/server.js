@@ -15,6 +15,7 @@ import projectRoutes from './routes/project.route.js';
 import streamRoutes from './routes/stream.route.js';
 import fleetRoutes from './routes/fleet.route.js';
 import healthRoutes from './routes/health.route.js';
+import gulfSentinelRoutes from './routes/gulf-sentinel.route.js';
 import googleAdsRoutes from './routes/google-ads.route.js';
 import linkedinRoutes from './routes/linkedin.route.js';
 import typeformRoutes from './routes/typeform.route.js';
@@ -151,6 +152,7 @@ app.get('/', (req, res) => {
 
 // --- RUTAS PÚBLICAS (sin autenticación de tenant) ---
 app.use('/health', healthRoutes);
+app.use('/api', gulfSentinelRoutes); // Gulf Sentinel — datos ambientales públicos
 app.use('/api/submit', submitLimiter, submitRoutes);
 
 // --- INTEGRACIONES EXTERNAS (autenticadas por token + secret propio) ---
