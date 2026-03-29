@@ -366,12 +366,6 @@
     <div style="position:absolute; top:10px; left:10px; z-index:1000; background:rgba(9,16,32,0.88); border:1px solid rgba(255,43,85,0.4); padding:6px 12px; font-family:'Orbitron'; font-size:0.65em; color:rgba(255,255,255,0.9); letter-spacing:1px;">
       DETECCIONES SAR • SENTINEL-1 + ML (SkyTruth Cerulean)
     </div>
-    <!-- Windy PiP overlay -->
-    <div class="windy-pip">
-      <div class="windy-pip-label">CORRIENTES · WINDY.COM</div>
-      <iframe src="https://embed.windy.com/embed2.html?lat=21&lon=-93&zoom=6&overlay=currents&marker=true" style="margin-top:22px; width:100%; height:calc(100% - 22px);"></iframe>
-    </div>
-
     <div class="map-legend" id="map-legend">
       <div style="font-family:'Orbitron'; font-size:0.75em; letter-spacing:2px; color:rgba(255,255,255,0.9);">LEYENDA</div>
       <div style="margin-top:8px; padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.1);">
@@ -412,6 +406,12 @@
 
     <div style="font-family:'Orbitron'; font-size:0.7em; color:var(--yellow); letter-spacing:3px; font-weight:900; padding:6px 0 12px; border-bottom:1px solid rgba(245,158,11,0.2); margin-bottom:12px;">
       DATOS EN VIVO
+    </div>
+
+    <!-- Windy corrientes como tarjeta -->
+    <div class="rcard" style="border-left:3px solid var(--cyan); padding:0; overflow:hidden; margin-bottom:10px;">
+      <div style="font-family:'Orbitron'; font-size:0.58em; letter-spacing:2px; color:var(--cyan); padding:7px 10px; background:rgba(56,189,248,0.06); border-bottom:1px solid rgba(56,189,248,0.15);">🌊 CORRIENTES EN VIVO · WINDY.COM</div>
+      <iframe src="https://embed.windy.com/embed2.html?lat=21&lon=-93&zoom=5&overlay=currents&marker=true" style="width:100%; height:180px; border:none; display:block;"></iframe>
     </div>
 
     <div class="rcard rcard-wind">
