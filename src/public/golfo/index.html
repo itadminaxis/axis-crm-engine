@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GULF SENTINEL — THE BOREAL AXIS, LLC</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #ff2b55; --cyan: #00c8ff; --green: #00ffb3; --yellow: #ffcc00;
+    --bg: #050b18; --panel: rgba(9, 16, 32, 0.94); --border: rgba(0, 200, 255, 0.22);
+    --muted: rgba(255,255,255,0.55);
+  }
+  body { background: radial-gradient(1200px 800px at 20% 0%, rgba(0,200,255,0.10), transparent 60%), radial-gradient(900px 600px at 80% 10%, rgba(0,255,179,0.08), transparent 55%), var(--bg); color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 13px; height: 100vh; overflow: hidden; margin: 0; }
+  
+  #app {
+    display: grid;
+    grid-template-columns: 300px 1fr 380px;
+    grid-template-rows: 52px 1fr 120px;
+    height: 100vh; gap: 4px; padding: 6px;
+  }
+
+  header {
+    grid-column: 1 / 4;
+    background: linear-gradient(90deg, rgba(9,16,32,0.95), rgba(9,16,32,0.75)); border: 1px solid rgba(0,200,255,0.28);
+    display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+    box-shadow: 0 0 22px rgba(0,200,255,0.12);
+  }
+  header h1 { font-family: 'Orbitron'; font-size: 1.6em; color: #fff; letter-spacing: 6px; font-weight: 900; margin: 0; text-shadow: 0 0 16px rgba(0,200,255,0.18); }
+
+  .panel { background: var(--panel); border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; position: relative; }
+  
+  #map1, #map2 { width: 100%; height: 100%; filter: contrast(1.25) saturate(1.15) brightness(0.95); background: #000; }
+  .map-container { position: relative; border-left: 1px solid rgba(255,255,255,0.08); }
+
+  .sidebar-left { grid-column: 1; grid-row: 2 / 4; border-right: 1px solid rgba(255,255,255,0.08); overflow-y: auto; padding: 10px; font-size: 0.92em; }
+
+  .s-head { font-family: 'Orbitron'; font-size: 0.8em; color: var(--red); letter-spacing: 3px; padding: 12px 0; border-bottom: 2px solid var(--red); margin-bottom: 12px; font-weight: 700; }
+  .s-head.cyan { color: var(--cyan); border-bottom-color: var(--cyan); }
+
+  .math-box {
+    font-family: 'Share Tech Mono', monospace; font-size: 1em; color: var(--green);
+    background: rgba(0,255,157,0.05); border: 2px solid var(--green); padding: 15px; margin: 15px 0;
+  }
+
+  .method-box {
+    border: 1px solid rgba(0,200,255,0.25);
+    background: rgba(0,200,255,0.05);
+    padding: 12px;
+    line-height: 1.35;
+    color: rgba(255,255,255,0.82);
+    font-size: 0.9em;
+  }
+  .method-box a { color: var(--cyan); text-decoration: none; border-bottom: 1px dotted rgba(0,200,255,0.55); }
+  .method-box a:hover { border-bottom-style: solid; }
+  .pill { display: inline-block; padding: 2px 6px; border: 1px solid rgba(255,255,255,0.14); border-radius: 999px; font-family: 'Share Tech Mono', monospace; font-size: 0.8em; color: rgba(255,255,255,0.75); }
+
+  .panel-bottom { grid-column: 2 / 4; grid-row: 3; border-top: 2px solid var(--cyan); display: grid; grid-template-columns: 1fr 1fr; font-size: 0.92em; }
+
+  .badge { background: var(--cyan); color: #000; font-family: 'Orbitron'; font-size: 0.65em; padding: 2px 6px; font-weight: 900; margin-right: 10px; }
+  .news-list { list-style: none; padding: 0; margin: 0; }
+  .news-item { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9em; }
+
+  .matrix {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.86em;
+    color: rgba(255,255,255,0.82);
+    margin-top: 10px;
+  }
+  .matrix th, .matrix td {
+    border: 1px solid rgba(255,255,255,0.10);
+    padding: 8px 9px;
+    vertical-align: top;
+  }
+  .matrix th {
+    background: rgba(0,200,255,0.06);
+    color: rgba(255,255,255,0.92);
+    letter-spacing: 1px;
+    font-family: 'Orbitron';
+    font-size: 0.72em;
+  }
+  .tag-yes { color: var(--green); }
+  .tag-no { color: rgba(255,255,255,0.55); }
+
+  .quick-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .quick {
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
+    padding: 10px;
+    text-decoration: none;
+    color: rgba(255,255,255,0.84);
+    display: block;
+  }
+  .quick .k { font-family: 'Orbitron'; font-size: 0.72em; letter-spacing: 2px; color: rgba(255,255,255,0.92); }
+  .quick .v { font-family: 'Share Tech Mono', monospace; font-size: 0.86em; color: rgba(255,255,255,0.70); margin-top: 6px; line-height: 1.3; }
+  .quick:hover { border-color: rgba(0,200,255,0.35); background: rgba(0,200,255,0.06); }
+
+  .update-banner {
+    margin-top: 6px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.82em;
+    line-height: 1.35;
+    color: rgba(255,255,255,0.70);
+  }
+  .update-banner .k { color: var(--yellow); }
+  .update-banner .v { color: var(--red); }
+
+  .map-legend {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    z-index: 1000;
+    background: rgba(9,16,32,0.82);
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 8px 10px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8em;
+    color: rgba(255,255,255,0.78);
+    line-height: 1.35;
+    max-width: 260px;
+  }
+  .legend-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  .legend-swatch { width: 18px; height: 10px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.15); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.15); }
+  .legend-box { width: 10px; height: 10px; border-radius: 2px; border: 2px solid rgba(0,200,255,0.95); background: transparent; }
+
+  .modis-layer .leaflet-tile {
+    filter: contrast(1.35) saturate(1.25) brightness(1.06);
+  }
+
+  .blink {
+    animation: blinkPulse 2.2s ease-in-out infinite;
+  }
+  @keyframes blinkPulse {
+    0% { opacity: 0.35; transform: scale(0.98); }
+    50% { opacity: 1; transform: scale(1.05); }
+    100% { opacity: 0.35; transform: scale(0.98); }
+  }
+
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div style="display:flex; align-items:baseline; gap:30px;">
+      <h1>GULF SENTINEL</h1>
+      <div style="color:var(--yellow); font-family:'Orbitron'; font-size:1.0em; letter-spacing:3px;">THE BOREAL AXIS, LLC</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:24px;">
+      <a href="mailto:sentinel@theboax.us" style="font-family:'Share Tech Mono';font-size:0.88em;color:var(--cyan);text-decoration:none;border:1px solid rgba(0,200,255,0.35);padding:5px 14px;letter-spacing:1px;white-space:nowrap;">✉ sentinel@theboax.us</a>
+    </div>
+    <div style="text-align:right;">
+      <div id="full-date" style="font-family:'Share Tech Mono'; font-size:0.9em; color:#888;">---</div>
+      <div id="clock" style="font-family:'Share Tech Mono'; font-size:2em; color:var(--cyan); text-shadow:0 0 10px var(--cyan); line-height:1;">00:00:00</div>
+      <div class="update-banner" id="update-banner">
+        <span class="k">ÚLTIMA ACT:</span> <span id="last-update">---</span> |
+        <span class="k">PRÓXIMA:</span> <span class="v" id="next-update">---</span>
+        <span id="next-countdown"></span>
+      </div>
+    </div>
+  </header>
+
+  <div class="panel sidebar-left">
+
+    <div style="padding:8px 0 12px; border-bottom:2px solid var(--red); margin-bottom:10px;">
+      <div style="font-family:'Orbitron'; font-size:0.9em; color:var(--red); letter-spacing:2px; font-weight:900;">DERRAME ACTIVO</div>
+      <div style="font-family:'Orbitron'; font-size:0.7em; color:rgba(255,255,255,0.7); letter-spacing:1px; margin-top:2px;">GOLFO DE MÉXICO — DESDE 1 MAR 2026</div>
+    </div>
+    <div style="background:rgba(0,200,255,0.05);border-left:3px solid var(--cyan);padding:8px 10px;margin-bottom:12px;font-size:0.88em;line-height:1.5;color:rgba(255,255,255,0.78);">
+      <b style="color:var(--cyan);font-family:'Orbitron';font-size:0.75em;letter-spacing:1px;">¿QUÉ ES ESTO?</b><br>
+      Monitor de seguimiento independiente del derrame de hidrocarburos activo en el Golfo de México. El seguimiento de este evento es una responsabilidad pública: sus implicaciones abarcan las economías pesqueras y turísticas de las zonas costeras, la supervivencia de fauna marina protegida y la integridad de siete reservas naturales. Los datos son satelitales, verificables y de código abierto.
+    </div>
+
+    <div style="font-size:1em; line-height:1.5; color:rgba(255,255,255,0.88); margin-bottom:12px;">
+      Un derrame de hidrocarburos afecta <b style="color:#fff;">630+ km de costa</b> en cuatro estados. SEMAR identificó tres fuentes: un buque no identificado en <b>Coatzacoalcos</b>, chapopoteras cercanas y emanaciones en <b>Cantarell</b>. Se han retirado 430 toneladas de crudo. Fauna muerta incluye tortugas marinas y un manatí. Siete reservas naturales afectadas.
+    </div>
+
+    <div style="font-family:'Orbitron'; font-size:0.65em; color:var(--cyan); letter-spacing:2px; margin-bottom:6px;">CRONOLOGÍA SATELITAL (SAR)</div>
+    <div id="sar-timeline" style="font-size:0.92em; line-height:1.6; color:rgba(255,255,255,0.75); border-left:2px solid rgba(255,255,255,0.15); padding-left:10px; margin-bottom:12px;">
+      Cargando detecciones...
+    </div>
+
+    <div style="font-family:'Orbitron'; font-size:0.65em; color:var(--cyan); letter-spacing:2px; margin-bottom:6px;">VERIFICACIÓN INDEPENDIENTE</div>
+    <div style="font-size:0.92em; line-height:1.7; margin-bottom:10px;">
+      <a href="https://www.aljazeera.com/news/2026/3/27/wildlife-killed-reefs-damaged-in-active-gulf-of-mexico-oil-spill" target="_blank" rel="noreferrer" style="color:var(--cyan); text-decoration:none; border-bottom:1px dotted var(--cyan);">Al Jazeera: Wildlife killed, reefs damaged</a><br>
+      <a href="https://abcnews.com/International/wireStory/gulf-mexico-oil-spill-spread-hundreds-miles-killed-131454235" target="_blank" rel="noreferrer" style="color:var(--cyan); text-decoration:none; border-bottom:1px dotted var(--cyan);">ABC News: Spill spread hundreds of miles</a><br>
+      <a href="https://verificado.com.mx/derrame-golfo-de-mx-un-desastre-ambiental-envuelto-en-opacidad-y-desinformacion-cruzada/" target="_blank" rel="noreferrer" style="color:var(--cyan); text-decoration:none; border-bottom:1px dotted var(--cyan);">Verificado: Opacidad y desinformación</a><br>
+      <a href="https://es.mongabay.com/2025/02/derrames-impunes-imagenes-satelitales-revelan-derrames-petroleo-no-reportados-golfo-de-mexico/" target="_blank" rel="noreferrer" style="color:var(--cyan); text-decoration:none; border-bottom:1px dotted var(--cyan);">Mongabay: Derrames impunes</a><br>
+      <a href="https://www.milenio.com/comunidad/mapa-ciudadano-reportar-derrame-crudo-golfo-mexico" target="_blank" rel="noreferrer" style="color:var(--green); text-decoration:none; border-bottom:1px dotted var(--green);">Mapa ciudadano (Red Corredor Arrecifal)</a>
+    </div>
+
+    <div style="font-family:'Orbitron'; font-size:0.65em; color:rgba(255,255,255,0.5); letter-spacing:2px; margin-bottom:6px;">DATOS EN VIVO</div>
+    <div style="font-family:'Share Tech Mono'; font-size:0.85em; color:rgba(255,255,255,0.7); line-height:1.6;">
+      <div id="wind-info">VIENTO: ---</div>
+      <div id="current-info">CORRIENTE: ---</div>
+      <div id="stale-warning" style="color:var(--yellow); display:none;"></div>
+      <div id="sar-info">SAR: ---</div>
+      <div id="credibility-info">HEURÍSTICA: ---</div>
+      <div id="model-info">MODELO: ---</div>
+      <div id="eta" style="display:none;">N/D</div>
+    </div>
+
+    <div style="margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.08); font-size:0.78em; color:rgba(255,255,255,0.45); line-height:1.4;">
+      <b>Gulf Sentinel</b> — The Boreal Axis, LLC<br>
+      Herramienta cívica independiente. No sustituye respuesta oficial. Datos: Sentinel-1 SAR vía <a href="https://cerulean.skytruth.org/" target="_blank" rel="noreferrer" style="color:rgba(255,255,255,0.55);">SkyTruth Cerulean</a>, viento vía Open-Meteo, corrientes vía HYCOM/ERDDAP. Las fuentes oficiales mexicanas pueden estar sujetas a presión política.
+      <span id="origin-note-api"></span>
+    </div>
+
+    <!-- Hidden inputs for TGT functionality -->
+    <div style="display:none;">
+      <input id="tgt-lat"><input id="tgt-lon"><input id="tgt-name">
+      <button id="tgt-apply"></button><div id="tgt-apply-status"></div>
+      <span id="tgt-display"></span><span id="tgt-bearing"></span><span id="tgt-distance"></span>
+      <span id="status">ESTIMADO</span>
+      <input id="sh-client-id"><input id="sh-client-secret">
+      <button id="sh-save"></button><div id="sh-save-status"></div>
+      <div id="sar-sh-info"></div>
+    </div>
+
+  </div>
+
+  <div class="panel map-container">
+    <div id="map1"></div>
+    <div style="position:absolute; top:10px; left:10px; z-index:1000; background:rgba(9,16,32,0.88); border:1px solid rgba(255,43,85,0.4); padding:6px 12px; font-family:'Orbitron'; font-size:0.65em; color:rgba(255,255,255,0.9); letter-spacing:1px;">
+      DETECCIONES SAR • SENTINEL-1 + ML (SkyTruth Cerulean)
+    </div>
+    <div class="map-legend" id="map-legend">
+      <div style="font-family:'Orbitron'; font-size:0.75em; letter-spacing:2px; color:rgba(255,255,255,0.9);">TRAYECTORIA</div>
+      <div style="margin-top:6px;">Línea/puntos calculados desde fuente confirmada (Coatzacoalcos, derrame activo 2026-03).</div>
+      <div class="legend-row">
+        <div class="legend-dot" style="background:#ff2b55;"></div>
+        <div>Origen (punto rojo)</div>
+      </div>
+      <div class="legend-row">
+        <div class="legend-box"></div>
+        <div>Objetivo (TGT)</div>
+      </div>
+      <div class="legend-row">
+        <div class="legend-swatch" style="background:#00c8ff;"></div>
+        <div>Trayectoria (cian)</div>
+      </div>
+      <div class="legend-row">
+        <div class="legend-swatch" style="background:rgba(255, 43, 85, 0.22); border-color: rgba(255, 43, 85, 0.55);"></div>
+        <div>Banda (mín. arrep.)</div>
+      </div>
+      <div style="margin-top:8px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.1);">
+        <div style="font-size:0.75em; letter-spacing:1px; margin-bottom:4px;">MANCHAS SAR (CERULEAN)</div>
+        <div style="display:flex; align-items:center; gap:3px;">
+          <div style="width:11px;height:11px;border-radius:50%;background:#fff;border:2px solid #000;"></div>
+          <div style="font-size:0.75em;">1 mar</div>
+          <div style="width:11px;height:11px;border-radius:50%;background:#ffff64;border:1px solid rgba(0,0,0,0.3);"></div>
+          <div style="width:11px;height:11px;border-radius:50%;background:#ffb400;border:1px solid rgba(0,0,0,0.3);"></div>
+          <div style="width:11px;height:11px;border-radius:50%;background:#ff5000;border:1px solid rgba(0,0,0,0.3);"></div>
+          <div style="width:11px;height:11px;border-radius:50%;background:#dc001e;border:1px solid rgba(0,0,0,0.3);"></div>
+          <div style="font-size:0.75em;">hoy</div>
+        </div>
+        <div style="font-size:0.75em; margin-top:2px;">Tamaño = área de la mancha</div>
+        <div id="sar-total-count" style="font-family:'Share Tech Mono'; font-size:0.8em; color:var(--yellow); margin-top:4px;">Cargando detecciones SAR...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel map-container" style="grid-column:3;">
+    <iframe style="width:100%; height:100%; border:none;"
+      src="https://embed.windy.com/embed2.html?lat=21&lon=-93&zoom=6&overlay=currents&marker=true"></iframe>
+    <div style="position:absolute; bottom:10px; left:10px; z-index:1000; background:rgba(9,16,32,0.85); border:1px solid rgba(255,204,0,0.3); padding:5px 8px; font-family:'Share Tech Mono'; font-size:0.7em; color:rgba(255,255,255,0.7); max-width:220px;">
+      Visualización independiente (Windy.com). NO alimenta el modelo de trayectoria.
+    </div>
+  </div>
+
+  <div class="panel panel-bottom">
+    <div style="padding:20px; border-right:1px solid var(--border);">
+      <div class="s-head cyan" style="margin:0; border:none;">FUENTES DE DATOS</div>
+      <div style="font-size:1.1em; color:#fff; font-family:'Orbitron'; font-weight:900; margin-top:10px;">
+        SAR: <span style="color:var(--cyan)">SENTINEL-1 C-BAND</span>
+      </div>
+      <div style="font-size:0.95em; color:rgba(255,255,255,0.74); margin-top:8px; line-height:1.5;">
+        Detección automática de manchas vía ML (U-Net) sobre imágenes Sentinel-1 VV. Procesado por <a href="https://cerulean.skytruth.org/" target="_blank" rel="noreferrer" style="color:var(--cyan);">SkyTruth Cerulean</a>. Viento: Open-Meteo. Corrientes: HYCOM/ERDDAP.
+      </div>
+    </div>
+    <div style="padding:20px; display:flex; flex-direction:column; justify-content:center;">
+       <div style="font-size:1.25em; color:var(--yellow); font-family:'Orbitron'; font-weight:900;">ETA IMPACTO: <span id="eta-bottom">N/D</span></div>
+       <div id="wind-info-bottom" style="font-family:'Share Tech Mono'; color:var(--cyan); font-size:1.1em; margin-top:10px;">DIR: --- | VEL: ---</div>
+       <div id="current-info-bottom" style="font-family:'Share Tech Mono'; color:rgba(255,255,255,0.72); font-size:0.95em; margin-top:6px;">CORRIENTE (HYCOM): ---</div>
+       <div id="stale-warning-bottom" style="font-family:'Share Tech Mono'; color:var(--yellow); font-size:0.82em; margin-top:4px; display:none;"></div>
+       <div id="model-info-bottom" style="font-family:'Share Tech Mono'; color:rgba(255,255,255,0.68); font-size:0.92em; margin-top:6px;">MODELO: ---</div>
+       <div class="quick-grid">
+         <a class="quick" href="https://cerulean.skytruth.org/" target="_blank" rel="noreferrer">
+           <div class="k">SKYTRUTH (SAR+IA)</div>
+           <div class="v">Abrir Cerulean • manchas potenciales</div>
+         </a>
+         <a class="quick" href="https://skytruth.org/cerulean-methods/" target="_blank" rel="noreferrer">
+           <div class="k">MÉTODOS</div>
+           <div class="v">Cómo detecta (U‑Net en Sentinel‑1 VV)</div>
+         </a>
+         <a class="quick" href="https://apps.sentinel-hub.com/eo-browser/?zoom=7&lat=19.0&lng=-92.5&themeId=DEFAULT-THEME&datasetId=S1_AWS_IW_VVVH" target="_blank" rel="noreferrer">
+           <div class="k">SENTINEL‑1 (SAR)</div>
+           <div class="v">EO Browser • Campeche</div>
+         </a>
+         <a class="quick" href="https://apps.sentinel-hub.com/eo-browser/?zoom=7&lat=19.0&lng=-92.5&themeId=DEFAULT-THEME&datasetId=S2L2A" target="_blank" rel="noreferrer">
+           <div class="k">SENTINEL‑2</div>
+           <div class="v">EO Browser • Campeche</div>
+         </a>
+       </div>
+       <div style="margin-top:8px; font-family:'Share Tech Mono'; color:rgba(255,255,255,0.62); font-size:0.85em;">
+         Corrientes (HYCOM): https://www.hycom.org/
+       </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  setInterval(() => {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.toLocaleTimeString('es-MX',{hour12:false});
+    document.getElementById('full-date').textContent = now.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase();
+  }, 1000);
+
+  var map1 = L.map('map1', {zoomControl: false, attributionControl: true}).setView([21.0, -93.0], 6);
+  map1.attributionControl.setPrefix(false);
+  var baseLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {subdomains: 'abcd', attribution: '© <a href="https://carto.com/">CARTO</a> © <a href="https://www.openstreetmap.org/copyright">OSM</a> | MODIS: <a href="https://earthdata.nasa.gov">NASA Earthdata</a> GIBS'}).addTo(map1);
+  
+  // MODIS desactivado: las nubes impiden ver las detecciones SAR.
+  // Basemap CARTO dark muestra el océano limpio para que las manchas destaquen.
+
+  // === CIUDADES COSTERAS ===
+  var cities = [
+    {name:'Coatzacoalcos', lat:18.15, lon:-94.43},
+    {name:'Villahermosa', lat:17.99, lon:-92.93},
+    {name:'Cd. del Carmen', lat:18.65, lon:-91.83},
+    {name:'Campeche', lat:19.84, lon:-90.53},
+    {name:'Veracruz', lat:19.18, lon:-96.14},
+    {name:'Tampico', lat:22.25, lon:-97.87},
+    {name:'Mérida', lat:20.97, lon:-89.62},
+    {name:'Dos Bocas', lat:18.44, lon:-93.18},
+    {name:'Paraíso', lat:18.40, lon:-93.21},
+    {name:'Tuxpan', lat:20.96, lon:-97.40},
+    {name:'Brownsville, TX', lat:25.93, lon:-97.50},
+    {name:'Corpus Christi, TX', lat:27.80, lon:-97.40},
+    {name:'Houston, TX', lat:29.76, lon:-95.37},
+    {name:'New Orleans, LA', lat:29.95, lon:-90.07},
+  ];
+  cities.forEach(function(c) {
+    var isMx = !c.name.includes('TX') && !c.name.includes('LA');
+    var color = isMx ? 'rgba(255,255,255,0.85)' : 'rgba(100,180,255,0.75)';
+    var sz = isMx ? '8px' : '7px';
+    L.marker([c.lat, c.lon], {
+      icon: L.divIcon({className:'', html:
+        '<div style="text-align:center;">' +
+        '<div style="width:5px;height:5px;background:'+color+';border-radius:50%;margin:0 auto;box-shadow:0 0 4px rgba(255,255,255,0.5);"></div>' +
+        '<div style="font-family:Rajdhani,sans-serif;font-size:'+sz+';color:'+color+';white-space:nowrap;margin-top:1px;text-shadow:0 0 3px #000,0 0 6px #000;">'+c.name+'</div></div>',
+        iconSize:[80,20], iconAnchor:[40,5]
+      })
+    }).addTo(map1);
+  });
+
+  // === FRONTERA MX-USA (línea simplificada del Golfo) ===
+  var borderMxUs = [
+    [25.955, -97.147], // Boca Chica, TX/Tamaulipas
+    [26.06, -97.18],
+    [26.45, -97.69],
+    [27.0, -97.5],     // Hacia Laredo aproximado
+  ];
+  L.polyline(borderMxUs, {color:'rgba(255,255,255,0.4)', weight:2, dashArray:'8,6', opacity:0.6}).addTo(map1);
+  // Etiqueta de frontera
+  L.marker([26.1, -97.3], {icon: L.divIcon({className:'', html:'<div style="font-family:Orbitron;font-size:7px;color:rgba(255,255,255,0.5);letter-spacing:2px;white-space:nowrap;text-shadow:0 0 4px #000;">MX | USA</div>', iconSize:[60,12], iconAnchor:[30,6]})}).addTo(map1);
+
+  var startMarker = L.marker([18.25,-94.35],{icon:L.divIcon({className:'',html:'<div style="width:12px;height:12px;background:var(--red);border-radius:50%;box-shadow:0 0 12px rgba(255,43,85,0.7);"></div>'})}).addTo(map1);
+  var targetMarker = L.marker([0,0],{icon:L.divIcon({className:'',html:'<div class=\"blink\" style=\"width:14px;height:14px;border:2px solid var(--cyan);border-radius:4px;box-shadow:0 0 12px rgba(0,200,255,0.55);\"></div>'})});
+  var baselineLine = L.polyline([], {color: 'rgba(255,255,255,0.55)', weight: 2, opacity: 0.8, dashArray: '7,9'});
+  var trajectoryOutline = L.polyline([], {color: 'rgba(0,0,0,0.7)', weight: 7, opacity: 0.9}).addTo(map1);
+  var trajectoryLine = L.polyline([], {color: '#00c8ff', weight: 4, opacity: 0.95}).addTo(map1);
+  var trajectoryPoints = L.layerGroup().addTo(map1);
+  var corridorPoly = L.polygon([], {color: 'rgba(255, 43, 85, 0.55)', weight: 1, fillColor: 'rgba(255, 43, 85, 0.22)', fillOpacity: 0.16}).addTo(map1);
+
+  var lastUpdateMs = null;
+  var nextUpdateMs = null;
+
+  function fmtUtc(ts) {
+    if (!ts) return 'N/D';
+    return ts.replace('T', ' ').replace('Z', ' UTC');
+  }
+
+  function updateCountdown() {
+    if (!nextUpdateMs) return;
+    const diff = nextUpdateMs - Date.now();
+    const el = document.getElementById('next-countdown');
+    if (!el) return;
+    if (diff <= 0) {
+      el.textContent = ' (actualizando...)';
+      return;
+    }
+    const totalSec = Math.floor(diff / 1000);
+    const m = Math.floor(totalSec / 60);
+    const s = totalSec % 60;
+    el.textContent = ` (en ${m}:${String(s).padStart(2,'0')})`;
+  }
+
+  async function setSentinelHubCreds(clientId, clientSecret) {
+    const payload = {client_id: clientId || '', client_secret: clientSecret || ''};
+    const res = await fetch('/api/sentinelhub/credentials', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    return await res.json();
+  }
+
+  function loadSentinelHubCredsFromStorage() {
+    try {
+      const raw = localStorage.getItem('sh_creds_v1');
+      if (!raw) return null;
+      const data = JSON.parse(raw);
+      if (!data || !data.client_id || !data.client_secret) return null;
+      return data;
+    } catch (e) { return null; }
+  }
+
+  function saveSentinelHubCredsToStorage(clientId, clientSecret) {
+    try {
+      localStorage.setItem('sh_creds_v1', JSON.stringify({client_id: clientId, client_secret: clientSecret}));
+    } catch (e) {}
+  }
+
+  async function bootstrapSentinelHubCreds() {
+    const idEl = document.getElementById('sh-client-id');
+    const secEl = document.getElementById('sh-client-secret');
+    const btn = document.getElementById('sh-save');
+    const statusEl = document.getElementById('sh-save-status');
+    if (!idEl || !secEl || !btn || !statusEl) return;
+
+    const saved = loadSentinelHubCredsFromStorage();
+    if (saved) {
+      idEl.value = saved.client_id;
+      secEl.value = saved.client_secret;
+      try {
+        const r = await setSentinelHubCreds(saved.client_id, saved.client_secret);
+        statusEl.textContent = r && r.ok ? 'Credenciales cargadas' : (r.reason || 'No se pudieron cargar');
+      } catch (e) {
+        statusEl.textContent = 'No se pudieron cargar';
+      }
+    }
+
+    btn.addEventListener('click', async () => {
+      const clientId = (idEl.value || '').trim();
+      const clientSecret = (secEl.value || '').trim();
+      if (!clientId || !clientSecret) {
+        statusEl.textContent = 'Faltan credenciales';
+        return;
+      }
+      statusEl.textContent = 'Guardando...';
+      try {
+        const r = await setSentinelHubCreds(clientId, clientSecret);
+        if (r && r.ok) {
+          saveSentinelHubCredsToStorage(clientId, clientSecret);
+          statusEl.textContent = 'OK (guardado localmente)';
+        } else {
+          statusEl.textContent = r.reason || 'Error';
+        }
+      } catch (e) {
+        statusEl.textContent = 'Error';
+      }
+    });
+  }
+
+  function loadTargetFromStorage() {
+    try {
+      const raw = localStorage.getItem('tgt_v1');
+      if (!raw) return null;
+      const d = JSON.parse(raw);
+      if (!d) return null;
+      if (typeof d.lat !== 'number' || typeof d.lon !== 'number') return null;
+      return d;
+    } catch (e) { return null; }
+  }
+
+  function saveTargetToStorage(lat, lon, name) {
+    try {
+      localStorage.setItem('tgt_v1', JSON.stringify({lat, lon, name: name || ''}));
+    } catch (e) {}
+  }
+
+  function bootstrapTargetUi() {
+    const latEl = document.getElementById('tgt-lat');
+    const lonEl = document.getElementById('tgt-lon');
+    const nameEl = document.getElementById('tgt-name');
+    const btnEl = document.getElementById('tgt-apply');
+    const statusEl = document.getElementById('tgt-apply-status');
+    if (!latEl || !lonEl || !nameEl || !btnEl || !statusEl) return;
+
+    const saved = loadTargetFromStorage();
+    if (saved) {
+      latEl.value = String(saved.lat);
+      lonEl.value = String(saved.lon);
+      nameEl.value = saved.name || '';
+      statusEl.textContent = 'Objetivo cargado';
+    }
+
+    btnEl.addEventListener('click', () => {
+      const lat = Number((latEl.value || '').trim());
+      const lon = Number((lonEl.value || '').trim());
+      const name = (nameEl.value || '').trim();
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+        statusEl.textContent = 'Lat/Lon inválidos';
+        return;
+      }
+      saveTargetToStorage(lat, lon, name);
+      statusEl.textContent = 'OK';
+      fetchAll();
+    });
+  }
+
+  async function fetchAll() {
+    try {
+      const tgt = loadTargetFromStorage();
+      let modelUrl = '/api/model';
+      if (tgt) {
+        const qp = new URLSearchParams();
+        qp.set('target_lat', String(tgt.lat));
+        qp.set('target_lon', String(tgt.lon));
+        if (tgt.name) qp.set('target_name', tgt.name);
+        modelUrl = `/api/model?${qp.toString()}`;
+      }
+      const mRes = await fetch(modelUrl); const mD = await mRes.json();
+      const w = mD.wind || {};
+      const windText = `DIR: ${w.wind_dir_deg}° | VEL: ${w.wind_speed_kt} KT`;
+      document.getElementById('wind-info').textContent = windText;
+      const wBot = document.getElementById('wind-info-bottom');
+      if (wBot) wBot.textContent = windText;
+      const c = mD.current || {};
+      const cTime = (c.time || '').replace('T', ' ').replace('Z', ' UTC');
+      const curText = `CORRIENTE (HYCOM): DIR: ${c.dir_to_deg}° | VEL: ${c.speed_kt} KT | ${cTime}`;
+      document.getElementById('current-info').textContent = curText;
+      const cBot = document.getElementById('current-info-bottom');
+      if (cBot) cBot.textContent = curText;
+      const staleEl = document.getElementById('stale-warning');
+      if (staleEl) {
+        if (c.stale_warning) { staleEl.textContent = '⚠ ' + c.stale_warning; staleEl.style.display = 'block'; }
+        else { staleEl.style.display = 'none'; }
+      }
+      const sBot = document.getElementById('stale-warning-bottom');
+      if (sBot) {
+        if (c.stale_warning) { sBot.textContent = '⚠ ' + c.stale_warning; sBot.style.display = 'block'; }
+        else { sBot.style.display = 'none'; }
+      }
+      const last = mD.generated_at_utc || '';
+      const next = mD.next_update_utc || '';
+      lastUpdateMs = last ? Date.parse(last) : null;
+      nextUpdateMs = next ? Date.parse(next) : null;
+      const lastEl = document.getElementById('last-update');
+      const nextEl = document.getElementById('next-update');
+      if (lastEl) lastEl.textContent = fmtUtc(last);
+      if (nextEl) nextEl.textContent = fmtUtc(next);
+      updateCountdown();
+      const towards = mD.towards_target;
+      const etaSuffix = (towards === false) ? ' (NO CONVERGE)' : '';
+      document.getElementById('eta').textContent = `${mD.eta_text}${etaSuffix}  (CONF: ${mD.confidence}%)`;
+      const etaBot = document.getElementById('eta-bottom');
+      if (etaBot) etaBot.textContent = `${mD.eta_text}${etaSuffix}  (CONF: ${mD.confidence}%)`;
+      document.getElementById('model-info').textContent = `MODELO: ${mD.model}`;
+      const mBot = document.getElementById('model-info-bottom');
+      if (mBot) mBot.textContent = `MODELO: ${mD.model}`;
+      const horizon = mD.horizon_hours;
+      const step = mD.step_hours;
+      const legendEl = document.getElementById('map-legend');
+      if (legendEl && horizon && step) {
+        legendEl.querySelector('div').textContent = `TRAYECTORIA (${Math.round(horizon/24)}D • Δ${step}H)`;
+      }
+      if (towards === false) {
+        document.getElementById('status').textContent = 'MONITOREO DE DERIVA MAR ADENTRO (72H)';
+        trajectoryLine.setStyle({color: '#ffcc00', opacity: 0.95});
+        trajectoryOutline.setStyle({opacity: 0.9});
+      } else {
+        if (!mD.target) {
+          document.getElementById('status').textContent = 'SIN OBJETIVO (CONFIGURAR TGT)';
+        } else {
+          document.getElementById('status').textContent = (mD.confidence >= 70) ? 'ESTIMADO (ALTA)' : (mD.confidence >= 50) ? 'ESTIMADO (MEDIA)' : 'ESTIMADO (BAJA)';
+        }
+        trajectoryLine.setStyle({color: '#00c8ff', opacity: 0.95});
+        trajectoryOutline.setStyle({opacity: 0.9});
+      }
+
+      const coords = (mD.trajectory || []).map(p => [p.lat, p.lon]);
+      if (coords.length > 1) {
+        trajectoryOutline.setLatLngs(coords);
+        trajectoryLine.setLatLngs(coords);
+        trajectoryLine.bringToFront();
+      }
+      const corridor = (mD.corridor || []).map(p => [p.lat, p.lon]);
+      if (corridor.length > 2) {
+        corridorPoly.setLatLngs([corridor]);
+        corridorPoly.bringToBack();
+      }
+      if (mD.start) startMarker.setLatLng([mD.start.lat, mD.start.lon]);
+      if (mD.target) {
+        targetMarker.setLatLng([mD.target.lat, mD.target.lon]);
+        if (!map1.hasLayer(targetMarker)) targetMarker.addTo(map1);
+        baselineLine.setLatLngs([[mD.start.lat, mD.start.lon],[mD.target.lat, mD.target.lon]]);
+        if (!map1.hasLayer(baselineLine)) baselineLine.addTo(map1);
+      } else {
+        if (map1.hasLayer(targetMarker)) map1.removeLayer(targetMarker);
+        if (map1.hasLayer(baselineLine)) map1.removeLayer(baselineLine);
+      }
+
+      const tgtDisplayEl = document.getElementById('tgt-display');
+      const tgtBearingEl = document.getElementById('tgt-bearing');
+      const tgtDistEl = document.getElementById('tgt-distance');
+      if (mD.target) {
+        if (tgtDisplayEl) tgtDisplayEl.textContent = (mD.target.name || 'TGT');
+        if (tgtBearingEl) tgtBearingEl.textContent = `${mD.bearing_to_target_deg}°`;
+        if (tgtDistEl) tgtDistEl.textContent = `${mD.distance_to_target_km}`;
+      } else {
+        if (tgtDisplayEl) tgtDisplayEl.textContent = 'SIN OBJETIVO';
+        if (tgtBearingEl) tgtBearingEl.textContent = 'N/D';
+        if (tgtDistEl) tgtDistEl.textContent = 'N/D';
+      }
+
+      const originNoteEl = document.getElementById('origin-note-api');
+      if (originNoteEl && mD.origin_note) originNoteEl.textContent = mD.origin_note;
+
+      trajectoryPoints.clearLayers();
+      (mD.trajectory || []).forEach(p => {
+        if (p.t_hours === 0) return;
+        if (p.t_hours % 12 !== 0) return;
+        L.circleMarker([p.lat, p.lon], {
+          radius: 3,
+          color: (towards === false) ? '#ffcc00' : '#00c8ff',
+          weight: 1,
+          opacity: 0.95,
+          fillColor: (towards === false) ? '#ffcc00' : '#00c8ff',
+          fillOpacity: 0.65
+        }).bindTooltip(`+${p.t_hours}h`, {direction: 'top', opacity: 0.9}).addTo(trajectoryPoints);
+      });
+
+      const sar = mD.sar || {};
+      const sarMatched = sar.numberMatched;
+      const sarEl = document.getElementById('sar-info');
+      if (sarEl) {
+        const v = (sarMatched === undefined || sarMatched === null) ? 'N/D' : sarMatched;
+        const hrs = sar.hours || '?';
+        const rkm = sar.radius_km || '?';
+        let sarHtml = `SAR (${hrs}H, ${rkm}km): <b>${v} detecciones</b> • SRC: Cerulean`;
+        const dets = sar.recent_detections || [];
+        if (dets.length > 0) {
+          sarHtml += '<div style="margin-top:4px; font-size:0.9em; color:rgba(255,255,255,0.7);">';
+          dets.forEach(d => {
+            const ts = (d.timestamp || '').replace('T', ' ');
+            const conf = d.confidence ? (d.confidence * 100).toFixed(0) + '%' : '?';
+            const link = d.url ? `<a href="${d.url}" target="_blank" rel="noreferrer" style="color:var(--cyan);">#${d.id}</a>` : `#${d.id}`;
+            sarHtml += `${link} ${ts} conf:${conf} | `;
+          });
+          sarHtml += '</div>';
+        }
+        sarEl.innerHTML = sarHtml;
+      }
+      const cred = mD.credibility || {};
+      const credEl = document.getElementById('credibility-info');
+      if (credEl) {
+        const risk = cred.false_positive_risk || 'N/D';
+        credEl.textContent = (risk === 'ALTO') ? 'HEURÍSTICA: posible falso positivo (sedimento/nube)' : (risk === 'BAJO') ? 'HEURÍSTICA: SAR respalda posible mancha' : 'HEURÍSTICA: N/D';
+      }
+
+      try {
+        const shRes = await fetch(`/api/sar-sentinelhub?lat=${(mD.start||{}).lat}&lon=${(mD.start||{}).lon}`);
+        const sh = await shRes.json();
+        const shEl = document.getElementById('sar-sh-info');
+        if (shEl) {
+          if (sh.enabled) {
+            const n = sh.scenes_found ?? 'N/D';
+            shEl.textContent = `SENTINEL HUB: scenes=${n}`;
+          } else {
+            shEl.textContent = `SENTINEL HUB: ${sh.reason || 'deshabilitado'}`;
+          }
+        }
+      } catch (e) {}
+
+    } catch(e){}
+  }
+  // === SAR DETECTIONS LAYER (derrame activo) ===
+  var sarDetectionsLayer = L.layerGroup().addTo(map1);
+  var sarLoaded = false;
+
+  function dateToColor(dateStr, minDate, maxDate) {
+    // Gradiente INVERTIDO: blanco (día 1) → amarillo → naranja → rojo vivo (hoy)
+    if (!minDate || !maxDate || minDate === maxDate) return '#ff2b55';
+    const d = new Date(dateStr).getTime();
+    const mn = new Date(minDate).getTime();
+    const mx = new Date(maxDate).getTime();
+    const t = Math.max(0, Math.min(1, (d - mn) / (mx - mn)));
+    const stops = [
+      [0.0, [255, 255, 255]],   // blanco — día 1
+      [0.25, [255, 255, 100]],  // amarillo claro
+      [0.5, [255, 180, 0]],     // naranja
+      [0.75, [255, 80, 0]],     // naranja-rojo
+      [1.0, [220, 0, 30]],      // rojo vivo — hoy
+    ];
+    let lo = stops[0], hi = stops[stops.length - 1];
+    for (let i = 0; i < stops.length - 1; i++) {
+      if (t >= stops[i][0] && t <= stops[i + 1][0]) { lo = stops[i]; hi = stops[i + 1]; break; }
+    }
+    const f = (hi[0] - lo[0]) > 0 ? (t - lo[0]) / (hi[0] - lo[0]) : 0;
+    const r = Math.round(lo[1][0] + f * (hi[1][0] - lo[1][0]));
+    const g = Math.round(lo[1][1] + f * (hi[1][1] - lo[1][1]));
+    const b = Math.round(lo[1][2] + f * (hi[1][2] - lo[1][2]));
+    return `rgb(${r},${g},${b})`;
+  }
+
+  async function loadSarDetections() {
+    if (sarLoaded) return;
+    try {
+      const res = await fetch('/api/sar-history');
+      const data = await res.json();
+      const dets = data.detections || [];
+      if (dets.length === 0) return;
+      sarLoaded = true;
+
+      const dates = dets.map(d => d.date).filter(Boolean);
+      const minDate = dates[0];
+      const maxDate = dates[dates.length - 1];
+
+      const sarCountEl = document.getElementById('sar-total-count');
+      if (sarCountEl) sarCountEl.textContent = `${dets.length} manchas SAR detectadas (${minDate} → ${maxDate})`;
+
+      // Pin grande para el DÍA 1
+      const day1Dets = dets.filter(d => d.date === minDate);
+      if (day1Dets.length > 0) {
+        const d1 = day1Dets[0];
+        const pinHtml = `<div style="position:relative; text-align:center;">
+          <div style="width:28px;height:28px;background:#fff;border:4px solid #000;border-radius:50%;box-shadow:0 0 20px rgba(255,255,255,1),0 0 40px rgba(255,255,255,0.5);"></div>
+          <div style="position:absolute;top:-22px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);border:2px solid #fff;padding:3px 10px;font-family:Orbitron;font-size:12px;color:#fff;white-space:nowrap;font-weight:900;letter-spacing:2px;border-radius:3px;">
+            1 MAR — DÍA 1
+          </div>
+          <div style="position:absolute;top:32px;left:50%;transform:translateX(-50%);font-family:'Share Tech Mono';font-size:10px;color:rgba(255,255,255,0.8);white-space:nowrap;text-shadow:0 0 6px #000,0 0 12px #000;">
+            Primera detección SAR
+          </div>
+        </div>`;
+        L.marker([d1.lat, d1.lon], {icon: L.divIcon({className:'', html:pinHtml, iconSize:[120,60], iconAnchor:[60,34]}), zIndexOffset: 2000}).bindTooltip(
+          `<b>PRIMERA DETECCIÓN SAR</b><br>${d1.date}<br>Área: ${d1.area_km2} km²<br><a href="${d1.url}" target="_blank">Cerulean #${d1.id}</a>`,
+          {direction:'top', opacity:0.95}
+        ).addTo(sarDetectionsLayer);
+      }
+
+      dets.forEach(d => {
+        const color = dateToColor(d.date, minDate, maxDate);
+        const radius = Math.max(4, Math.min(16, Math.sqrt(d.area_km2) * 2.5));
+        const marker = L.circleMarker([d.lat, d.lon], {
+          radius: radius,
+          color: '#000',
+          weight: 1,
+          opacity: 0.8,
+          fillColor: color,
+          fillOpacity: 0.6,
+        });
+        const confPct = (d.conf * 100).toFixed(0);
+        marker.bindTooltip(
+          `<b>${d.date}</b><br>` +
+          `Área: ${d.area_km2} km²<br>` +
+          `Confianza: ${confPct}%<br>` +
+          `<a href="${d.url}" target="_blank">Ver en Cerulean #${d.id}</a>`,
+          {direction: 'top', opacity: 0.95}
+        );
+        marker.addTo(sarDetectionsLayer);
+      });
+
+      // ── Cronología SAR estilo NYT ──
+      const timelineEl = document.getElementById('sar-timeline');
+      if (timelineEl) {
+        const byDay = {};
+        dets.forEach(d => {
+          if (!byDay[d.date]) byDay[d.date] = {count: 0, totalArea: 0, maxArea: 0, maxConf: 0};
+          byDay[d.date].count++;
+          byDay[d.date].totalArea += d.area_km2;
+          if (d.area_km2 > byDay[d.date].maxArea) byDay[d.date].maxArea = d.area_km2;
+          if (d.conf > byDay[d.date].maxConf) byDay[d.date].maxConf = d.conf;
+        });
+        const daysAsc = Object.keys(byDay).sort();
+        const startDate = new Date(daysAsc[0] + 'T00:00:00Z');
+
+        // Pre-calcular área acumulada en orden ascendente
+        let cumAreaByDay = {}, running = 0;
+        daysAsc.forEach(day => { running += byDay[day].totalArea; cumAreaByDay[day] = running; });
+        const totalCumArea = running;
+
+        // Función para renderizar un día
+        function renderTLDay(day, isOldest) {
+          const info = byDay[day];
+          const cumArea = cumAreaByDay[day];
+          const dayDate = new Date(day + 'T00:00:00Z');
+          const dayNum = Math.round((dayDate - startDate) / 86400000) + 1;
+          const color = dateToColor(day, daysAsc[0], daysAsc[daysAsc.length-1]);
+          const dot = `display:inline-block;width:9px;height:9px;border-radius:50%;background:${color};border:1.5px solid rgba(0,0,0,0.5);margin-right:5px;vertical-align:middle;`;
+          const dateLabel = dayDate.toLocaleDateString('es-MX', {day:'numeric', month:'short'}).toUpperCase();
+          let desc = isOldest
+            ? `Primera detección satelital. ${info.count} mancha${info.count>1?'s':''}, ${info.totalArea.toFixed(1)} km² totales.`
+            : info.maxArea > 30
+              ? `${info.count} mancha${info.count>1?'s':''} detectada${info.count>1?'s':''}. Mayor: ${info.maxArea.toFixed(1)} km². Acum: ${cumArea.toFixed(0)} km².`
+              : info.count >= 5
+                ? `${info.count} manchas, ${info.totalArea.toFixed(1)} km². Derrame en dispersión.`
+                : `${info.count} detección${info.count>1?'es':''}, ${info.totalArea.toFixed(1)} km².`;
+          return `<div style="margin-bottom:7px;"><span style="${dot}"></span><b style="color:#fff;font-size:0.85em;">DÍA ${dayNum}</b> <span style="font-size:0.8em;color:rgba(255,255,255,0.5);">${dateLabel}</span><br><span style="font-size:0.88em;">${desc}</span></div>`;
+        }
+
+        // SANDWICH: más reciente arriba → medio colapsado → Día 1 abajo
+        const daysDesc = [...daysAsc].reverse();
+        let html = '';
+
+        // Tapa superior: 2 eventos más recientes
+        html += renderTLDay(daysDesc[0], false);
+        if (daysDesc.length > 1) html += renderTLDay(daysDesc[1], daysDesc.length === 2);
+
+        // Relleno: días intermedios colapsados
+        if (daysDesc.length > 3) {
+          const mid = daysDesc.slice(2, daysDesc.length - 1);
+          html += `<div style="margin:4px 0;">
+            <div id="tl-toggle" onclick="var e=document.getElementById('tl-mid');var t=document.getElementById('tl-toggle');var open=e.style.display==='block';e.style.display=open?'none':'block';t.textContent=open?'··· ${mid.length} días anteriores — ver más ···':'··· colapsar ···';" style="padding:5px 8px;background:rgba(255,255,255,0.04);border:1px dashed rgba(255,255,255,0.15);cursor:pointer;color:rgba(255,255,255,0.45);font-size:0.80em;text-align:center;border-radius:2px;">··· ${mid.length} días anteriores — ver más ···</div>
+            <div id="tl-mid" style="display:none;">${mid.map(d => renderTLDay(d, false)).join('')}</div>
+          </div>`;
+        } else if (daysDesc.length === 3) {
+          html += renderTLDay(daysDesc[2], false);
+        }
+
+        // Tapa inferior: Día 1
+        if (daysDesc.length > 2) {
+          html += `<div style="border-top:1px solid rgba(255,255,255,0.12);padding-top:6px;margin-top:2px;">${renderTLDay(daysAsc[0], true)}</div>`;
+        }
+
+        html += `<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.1);font-size:0.82em;color:rgba(255,255,255,0.5);">${dets.length} detecciones · ${daysAsc.length} días · ${totalCumArea.toFixed(0)} km² acumulados</div>`;
+        timelineEl.innerHTML = html;
+      }
+    } catch (e) {
+      console.error('SAR history error:', e);
+    }
+  }
+
+  // Cargar detecciones SAR al inicio
+  loadSarDetections();
+
+  bootstrapSentinelHubCreds();
+  bootstrapTargetUi();
+  fetchAll(); setInterval(fetchAll, 300000);
+  setInterval(updateCountdown, 1000);
+</script>
+</body>
+</html>
