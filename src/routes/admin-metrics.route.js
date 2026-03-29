@@ -11,6 +11,10 @@
 
 import express from 'express';
 import db from '../db/index.js';
+import { quickAddJob } from 'graphile-worker';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const { queryRaw } = db;
 const router = express.Router();
@@ -107,6 +111,64 @@ router.get('/all-tenants', async (req, res) => {
     });
   } catch (error) {
     console.error('Error en GET /api/admin/metrics/all-tenants:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/admin/metrics/digest/trigger
+// Dispara el digest mensual manualmente (para testing o envío urgente).
+// Body opcional: { "month": "2026-02" } para un mes específico.
+// ---------------------------------------------------------------------------
+
+/**
+ * @openapi
+ * /api/admin/metrics/digest/trigger:
+ *   post:
+ *     summary: Disparar digest mensual manualmente (super-admin)
+ *     description: Encola la tarea monthly-digest para ejecución inmediata. Útil para testing y reenvíos.
+ *     security:
+ *       - ApiKeyAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               month:
+ *                 type: string
+ *                 description: 'Mes a reportar en formato YYYY-MM (ej: 2026-02). Si se omite, usa el mes anterior.'
+ *     responses:
+ *       200:
+ *         description: Tarea encolada correctamente.
+ *       401:
+ *         description: Acceso denegado.
+ */
+router.post('/digest/trigger', async (req, res) => {
+  try {
+    const workerConfig = { connectionString: process.env.DATABASE_URL };
+    let override = null;
+
+    // Si se especifica un mes (YYYY-MM), calcular el rango exacto
+    if (req.body?.month) {
+      const [year, month] = req.body.month.split('-').map(Number);
+      if (!year || !month || month < 1 || month > 12) {
+        return res.status(400).json({ error: 'Formato de mes inválido. Usa YYYY-MM (ej: 2026-02)' });
+      }
+      const from     = new Date(year, month - 1, 1).toISOString();
+      const to       = new Date(year, month, 0, 23, 59, 59, 999).toISOString();
+      const monthName = new Date(year, month - 1, 1).toLocaleString('es-MX', { month: 'long', year: 'numeric' });
+      override = { targetYear: year, targetMonth: month - 1, from, to, monthName };
+    }
+
+    await quickAddJob(workerConfig, 'monthly-digest', { override });
+
+    res.json({
+      message: 'Digest encolado ✅',
+      period: override ? override.monthName : 'mes anterior (automático)',
+      note: 'El worker enviará los emails en segundos si RESEND_API_KEY está configurado.'
+    });
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
