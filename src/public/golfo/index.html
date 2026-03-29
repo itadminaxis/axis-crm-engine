@@ -94,7 +94,7 @@
   .live-card .lv { font-size: 0.95em; color: var(--text); font-family: 'Share Tech Mono', monospace; line-height: 1.3; }
   /* LIVE badge */
   .live-badge {
-    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+    position: absolute; top: 12px; left: 58%; transform: translateX(-50%);
     z-index: 1050; display: flex; align-items: center; gap: 8px;
     background: rgba(10,16,32,0.88); border: 1px solid rgba(239,68,68,0.5);
     padding: 5px 16px; border-radius: 20px;
@@ -282,7 +282,7 @@
 
     <!-- BLOQUE 1: Alerta roja — evento activo -->
     <div class="sec sec-red" style="margin-bottom:14px;">
-      <div style="font-family:'Orbitron'; font-size:1em; color:var(--red); letter-spacing:2px; font-weight:900;">DERRAME ACTIVO</div>
+      <div class="blink" style="font-family:'Orbitron'; font-size:1em; color:var(--red); letter-spacing:2px; font-weight:900;">⚠ DERRAME ACTIVO</div>
       <div style="font-family:'Rajdhani'; font-size:0.85em; color:rgba(255,255,255,0.75); letter-spacing:1px; margin-top:4px; font-weight:600;">GOLFO DE MÉXICO · DESDE 1 MAR 2026 · DÍA <span id="day-counter">—</span></div>
     </div>
 
@@ -310,9 +310,9 @@
       </div>
     </div>
 
-    <!-- BLOQUE 5: Cobertura de prensa -->
-    <div class="sec sec-press" style="margin-bottom:14px;">
-      <div class="sec-label" style="color:rgba(255,255,255,0.5);">Cobertura verificada</div>
+    <!-- BLOQUE 5: Cobertura de prensa — fondo amarillo -->
+    <div class="sec sec-amber" style="margin-bottom:14px;">
+      <div class="sec-label" style="color:var(--yellow);">Cobertura verificada</div>
       <div style="display:flex; flex-direction:column; gap:7px;">
         <div style="border-left:3px solid var(--cyan); padding:7px 10px; background:rgba(56,189,248,0.06); border-radius:0 3px 3px 0;">
           <div style="font-size:0.75em; color:var(--text-dim); margin-bottom:3px;">27 MAR 2026 · AL JAZEERA</div>
@@ -333,9 +333,10 @@
       </div>
     </div>
 
-    <!-- BLOQUE 8: Disclaimer muted -->
-    <div style="font-size:0.78em; color:rgba(255,255,255,0.38); line-height:1.5; padding: 0 2px 16px;">
-      <b style="color:rgba(255,255,255,0.55);">Gulf Sentinel</b> es operado por <b style="color:rgba(255,255,255,0.55);">The Boreal Axis LLC</b>. Datos: Sentinel-1 SAR / SkyTruth Cerulean (ESA/NASA), Open-Meteo, HYCOM/ERDDAP. No sustituye comunicados oficiales. Sin afiliación política.
+    <!-- BLOQUE 8: Disclaimer legal (EN) -->
+    <div style="font-size:0.72em; color:rgba(255,255,255,0.35); line-height:1.55; padding: 8px 4px 16px; border-top:1px solid rgba(255,255,255,0.06); margin-top:6px;">
+      <b style="color:rgba(255,255,255,0.5);">LEGAL DISCLAIMER</b><br>
+      Gulf Sentinel is operated by <b style="color:rgba(255,255,255,0.48);">The Boreal Axis LLC</b>, a US-registered limited liability company. This dashboard is provided strictly for informational and public-interest purposes. All data is sourced from publicly available satellite imagery (Sentinel-1 SAR via ESA/Copernicus), machine-learning detection models (SkyTruth Cerulean), open meteorological APIs (Open-Meteo), and oceanographic models (HYCOM/ERDDAP/NOAA). The Boreal Axis LLC does not independently verify the accuracy, completeness, or timeliness of third-party data. Drift trajectory models are computational estimates and should not be relied upon for emergency response, navigation, or legal proceedings. This platform does not replace official government communications, SEMAR bulletins, or NOAA advisories. The Boreal Axis LLC assumes no liability for decisions made based on information displayed herein. No political affiliation. All rights reserved.
       <span id="origin-note-api"></span>
     </div>
 
