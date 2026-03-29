@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -94,7 +94,7 @@
   .live-card .lv { font-size: 0.95em; color: var(--text); font-family: 'Share Tech Mono', monospace; line-height: 1.3; }
   /* LIVE badge */
   .live-badge {
-    position: absolute; top: 12px; left: 58%; transform: translateX(-50%);
+    position: absolute; top: 12px; right: 14px;
     z-index: 1050; display: flex; align-items: center; gap: 8px;
     background: rgba(10,16,32,0.88); border: 1px solid rgba(239,68,68,0.5);
     padding: 5px 16px; border-radius: 20px;
@@ -264,15 +264,16 @@
       <h1>GULF SENTINEL</h1>
       <div style="color:var(--yellow); font-family:'Orbitron'; font-size:1.0em; letter-spacing:3px;">THE BOREAL AXIS, LLC</div>
     </div>
-    <div style="display:flex;align-items:center;gap:24px;">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <button id="lang-toggle" onclick="toggleLang()" style="font-family:'Share Tech Mono';font-size:0.78em;color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);padding:4px 10px;cursor:pointer;letter-spacing:1px;border-radius:3px;white-space:nowrap;">ES</button>
       <a href="mailto:sentinel@theboax.us" style="font-family:'Share Tech Mono';font-size:0.88em;color:var(--cyan);text-decoration:none;border:1px solid rgba(0,200,255,0.35);padding:5px 14px;letter-spacing:1px;white-space:nowrap;">✉ sentinel@theboax.us</a>
     </div>
     <div style="text-align:right;">
       <div id="full-date" style="font-family:'Share Tech Mono'; font-size:0.9em; color:#888;">---</div>
       <div id="clock" style="font-family:'Share Tech Mono'; font-size:2em; color:var(--cyan); text-shadow:0 0 10px var(--cyan); line-height:1;">00:00:00</div>
       <div class="update-banner" id="update-banner">
-        <span class="k">ÚLTIMA ACT:</span> <span id="last-update">---</span> |
-        <span class="k">PRÓXIMA:</span> <span class="v" id="next-update">---</span>
+        <span class="k">LAST UPDATE:</span> <span id="last-update">---</span> |
+        <span class="k">NEXT:</span> <span class="v" id="next-update">---</span>
         <span id="next-countdown"></span>
       </div>
     </div>
@@ -282,53 +283,53 @@
 
     <!-- BLOQUE 1: Alerta roja — evento activo -->
     <div class="sec sec-red" style="margin-bottom:14px;">
-      <div class="blink" style="font-family:'Orbitron'; font-size:1em; color:var(--red); letter-spacing:2px; font-weight:900;">⚠ DERRAME ACTIVO</div>
-      <div style="font-family:'Rajdhani'; font-size:0.85em; color:rgba(255,255,255,0.75); letter-spacing:1px; margin-top:4px; font-weight:600;">GOLFO DE MÉXICO · DESDE 1 MAR 2026 · DÍA <span id="day-counter">—</span></div>
+      <div class="blink" data-i18n="active-spill" style="font-family:'Orbitron'; font-size:1em; color:var(--red); letter-spacing:2px; font-weight:900;">⚠ ACTIVE SPILL</div>
+      <div style="font-family:'Rajdhani'; font-size:0.85em; color:rgba(255,255,255,0.75); letter-spacing:1px; margin-top:4px; font-weight:600;"><span data-i18n="since">GULF OF MEXICO · SINCE MAR 1, 2026 · DAY</span> <span id="day-counter">—</span></div>
     </div>
 
     <!-- BLOQUE 2: Contexto azul — qué es esto -->
     <div class="sec sec-blue" style="margin-bottom:14px;">
-      <div class="sec-label" style="color:var(--cyan);">¿Qué es este monitor?</div>
-      <div style="font-size:0.92em; line-height:1.6; color:rgba(255,255,255,0.85);">
-        Seguimiento satelital independiente del derrame activo. El seguimiento de este evento es una responsabilidad pública: afecta economías pesqueras y turísticas costeras, fauna marina protegida y siete reservas naturales. Datos verificables, código abierto.
+      <div class="sec-label" style="color:var(--cyan);" data-i18n="what">What is this monitor?</div>
+      <div style="font-size:0.92em; line-height:1.6; color:rgba(255,255,255,0.85);" data-i18n="what-body" data-html="1">
+        Independent satellite tracking of an active oil spill. Monitoring this event is a public responsibility: it affects coastal fishing and tourism economies, protected marine wildlife, and seven natural reserves. Verifiable data, open source.
       </div>
     </div>
 
     <!-- BLOQUE 3: Cuerpo neutro — hechos documentados -->
     <div class="sec sec-body" style="margin-bottom:14px;">
-      <div class="sec-label" style="color:rgba(255,255,255,0.5);">Hechos documentados</div>
-      <div style="font-size:0.95em; line-height:1.65; color:rgba(255,255,255,0.88);">
-        <b style="color:#fff;">630+ km de costa</b> en cuatro estados. SEMAR identificó tres fuentes: buque no identificado en <b>Coatzacoalcos</b>, chapopoteras cercanas y emanaciones en <b>Cantarell</b>. 430 toneladas de crudo retiradas. Tortugas marinas y un manatí muertos. Siete reservas naturales afectadas.
+      <div class="sec-label" style="color:rgba(255,255,255,0.5);" data-i18n="facts">Documented facts</div>
+      <div style="font-size:0.95em; line-height:1.65; color:rgba(255,255,255,0.88);" data-i18n="facts-body" data-html="1">
+        <b style="color:#fff;">630+ km of coastline</b> across four states. SEMAR identified three sources: unidentified vessel near <b>Coatzacoalcos</b>, nearby natural seeps, and emanations at <b>Cantarell</b>. 430 tonnes of crude recovered. Sea turtles and a manatee killed. Seven natural reserves affected.
       </div>
     </div>
 
     <!-- BLOQUE 4: Cronología púrpura — datos SAR -->
     <div class="sec sec-purple" style="margin-bottom:14px;">
-      <div class="sec-label" style="color:#a78bfa;">Cronología Satelital (SAR · Sentinel-1)</div>
+      <div class="sec-label" style="color:#a78bfa;" data-i18n="timeline">Satellite Timeline (SAR · Sentinel-1)</div>
       <div id="sar-timeline" style="font-size:0.93em; line-height:1.65; color:rgba(255,255,255,0.82);">
-        Cargando detecciones...
+        Loading detections...
       </div>
     </div>
 
     <!-- BLOQUE 5: Cobertura de prensa — fondo amarillo -->
     <div class="sec sec-amber" style="margin-bottom:14px;">
-      <div class="sec-label" style="color:var(--yellow);">Cobertura verificada</div>
+      <div class="sec-label" style="color:var(--yellow);" data-i18n="coverage">Verified coverage</div>
       <div style="display:flex; flex-direction:column; gap:7px;">
         <div style="border-left:3px solid var(--cyan); padding:7px 10px; background:rgba(56,189,248,0.06); border-radius:0 3px 3px 0;">
-          <div style="font-size:0.75em; color:var(--text-dim); margin-bottom:3px;">27 MAR 2026 · AL JAZEERA</div>
-          <a href="https://www.aljazeera.com/news/2026/3/27/wildlife-killed-reefs-damaged-in-active-gulf-of-mexico-oil-spill" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.92em; line-height:1.4; display:block;">Fauna muerta, arrecifes dañados en derrame activo del Golfo</a>
+          <div style="font-size:0.75em; color:var(--text-dim); margin-bottom:3px;">MAR 27, 2026 · AL JAZEERA</div>
+          <a href="https://www.aljazeera.com/news/2026/3/27/wildlife-killed-reefs-damaged-in-active-gulf-of-mexico-oil-spill" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.92em; line-height:1.4; display:block;">Wildlife killed, reefs damaged in active Gulf of Mexico oil spill</a>
         </div>
         <div style="border-left:3px solid var(--cyan); padding:7px 10px; background:rgba(56,189,248,0.06); border-radius:0 3px 3px 0;">
           <div style="font-size:0.75em; color:var(--text-dim); margin-bottom:3px;">MAR 2026 · ABC NEWS</div>
-          <a href="https://abcnews.com/International/wireStory/gulf-mexico-oil-spill-spread-hundreds-miles-killed-131454235" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.92em; line-height:1.4; display:block;">Derrame se extiende cientos de millas, mata fauna marina</a>
+          <a href="https://abcnews.com/International/wireStory/gulf-mexico-oil-spill-spread-hundreds-miles-killed-131454235" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.92em; line-height:1.4; display:block;">Gulf of Mexico oil spill spread hundreds of miles, killed marine wildlife</a>
         </div>
         <div style="border-left:3px solid var(--yellow); padding:7px 10px; background:rgba(251,191,36,0.05); border-radius:0 3px 3px 0;">
           <div style="font-size:0.75em; color:var(--text-dim); margin-bottom:3px;">MAR 2026 · VERIFICADO.COM.MX</div>
-          <a href="https://verificado.com.mx/derrame-golfo-de-mx-un-desastre-ambiental-envuelto-en-opacidad-y-desinformacion-cruzada/" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.92em; line-height:1.4; display:block;">Desastre ambiental envuelto en opacidad y desinformación cruzada</a>
+          <a href="https://verificado.com.mx/derrame-golfo-de-mx-un-desastre-ambiental-envuelto-en-opacidad-y-desinformacion-cruzada/" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.92em; line-height:1.4; display:block;">Environmental disaster shrouded in opacity and cross-disinformation</a>
         </div>
         <div style="border-left:3px solid var(--green); padding:7px 10px; background:rgba(52,211,153,0.05); border-radius:0 3px 3px 0;">
           <div style="font-size:0.75em; color:var(--text-dim); margin-bottom:3px;">FEB 2025 · MONGABAY</div>
-          <a href="https://es.mongabay.com/2025/02/derrames-impunes-imagenes-satelitales-revelan-derrames-petroleo-no-reportados-golfo-de-mexico/" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.92em; line-height:1.4; display:block;">Imágenes satelitales revelan derrames no reportados — patrón previo</a>
+          <a href="https://es.mongabay.com/2025/02/derrames-impunes-imagenes-satelitales-revelan-derrames-petroleo-no-reportados-golfo-de-mexico/" target="_blank" rel="noreferrer" style="color:var(--text); text-decoration:none; font-size:0.92em; line-height:1.4; display:block;">Satellite imagery reveals unreported oil spills — prior pattern</a>
         </div>
       </div>
     </div>
@@ -367,9 +368,9 @@
       DETECCIONES SAR • SENTINEL-1 + ML (SkyTruth Cerulean)
     </div>
     <div class="map-legend" id="map-legend">
-      <div style="font-family:'Orbitron'; font-size:0.75em; letter-spacing:2px; color:rgba(255,255,255,0.9);">LEYENDA</div>
+      <div style="font-family:'Orbitron'; font-size:0.75em; letter-spacing:2px; color:rgba(255,255,255,0.9);">LEGEND</div>
       <div style="margin-top:8px; padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.1);">
-        <div style="font-size:0.75em; letter-spacing:1px; margin-bottom:4px;">DETECCIONES SAR (CERULEAN · ML)</div>
+        <div style="font-size:0.75em; letter-spacing:1px; margin-bottom:4px;">SAR DETECTIONS (CERULEAN · ML)</div>
         <div style="display:flex; align-items:center; gap:3px;">
           <div style="width:11px;height:11px;border-radius:50%;background:#fff;border:2px solid #000;"></div>
           <div style="font-size:0.75em;">1 mar</div>
@@ -379,22 +380,22 @@
           <div style="width:11px;height:11px;border-radius:50%;background:#dc001e;border:1px solid rgba(0,0,0,0.3);"></div>
           <div style="font-size:0.75em;">hoy</div>
         </div>
-        <div style="font-size:0.75em; margin-top:2px;">Tamaño ∝ área de mancha (km²)</div>
-        <div style="font-size:0.75em; margin-top:1px;">Pin blanco grande = primera detección (Día 1)</div>
+        <div style="font-size:0.75em; margin-top:2px;">Size ∝ slick area (km²)</div>
+        <div style="font-size:0.75em; margin-top:1px;">Large white pin = first detection (Day 1)</div>
       </div>
       <div style="margin-top:6px;">
-        <div style="font-size:0.75em; letter-spacing:1px; margin-bottom:4px;">MODELO DE DERIVA</div>
+        <div style="font-size:0.75em; letter-spacing:1px; margin-bottom:4px;">DRIFT MODEL</div>
         <div class="legend-row">
           <div class="legend-swatch" style="background:#00c8ff;"></div>
-          <div>Trayectoria estimada</div>
+          <div>Estimated trajectory</div>
         </div>
         <div class="legend-row">
           <div class="legend-swatch" style="background:rgba(255, 43, 85, 0.22); border-color: rgba(255, 43, 85, 0.55);"></div>
-          <div>Corredor de incertidumbre</div>
+          <div>Uncertainty corridor</div>
         </div>
         <div class="legend-row">
           <div class="legend-dot" style="background:var(--red);"></div>
-          <div>Origen confirmado (Coatzacoalcos)</div>
+          <div>Confirmed origin (Coatzacoalcos)</div>
         </div>
       </div>
       <div id="sar-total-count" style="font-family:'Share Tech Mono'; font-size:0.8em; color:var(--yellow); margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.1);">Cargando detecciones SAR...</div>
@@ -405,23 +406,23 @@
   <div class="panel sidebar-right">
 
     <div style="font-family:'Orbitron'; font-size:0.7em; color:var(--yellow); letter-spacing:3px; font-weight:900; padding:6px 0 12px; border-bottom:1px solid rgba(245,158,11,0.2); margin-bottom:12px;">
-      DATOS EN VIVO
+      <span data-i18n="live-data">LIVE DATA</span>
     </div>
 
     <!-- Windy corrientes como tarjeta -->
     <div class="rcard" style="border-left:3px solid var(--cyan); padding:0; overflow:hidden; margin-bottom:10px;">
-      <div style="font-family:'Orbitron'; font-size:0.58em; letter-spacing:2px; color:var(--cyan); padding:7px 10px; background:rgba(56,189,248,0.06); border-bottom:1px solid rgba(56,189,248,0.15);">🌊 CORRIENTES EN VIVO · WINDY.COM</div>
-      <iframe src="https://embed.windy.com/embed2.html?lat=21&lon=-93&zoom=5&overlay=currents&marker=true" style="width:100%; height:180px; border:none; display:block;"></iframe>
+      <div style="font-family:'Orbitron'; font-size:0.58em; letter-spacing:2px; color:var(--cyan); padding:7px 10px; background:rgba(56,189,248,0.06); border-bottom:1px solid rgba(56,189,248,0.15);">🌊 LIVE CURRENTS · WINDY.COM</div>
+      <iframe src="https://embed.windy.com/embed2.html?lat=23&lon=-90&zoom=5&overlay=currents&marker=true" style="width:100%; height:180px; border:none; display:block;"></iframe>
     </div>
 
     <div class="rcard rcard-wind">
-      <div class="rcard-title" style="color:var(--cyan);">🌬 Viento (Open-Meteo)</div>
+      <div class="rcard-title" style="color:var(--cyan);" data-i18n="wind-title">🌬 Wind (Open-Meteo)</div>
       <div class="rcard-val" id="wind-r-dir">---</div>
       <div class="rcard-val" id="wind-r-vel">---</div>
     </div>
 
     <div class="rcard rcard-curr">
-      <div class="rcard-title" style="color:var(--green);">🌊 Corriente Marina (HYCOM)</div>
+      <div class="rcard-title" style="color:var(--green);" data-i18n="curr-title">🌊 Ocean Current (HYCOM)</div>
       <div class="rcard-val" id="curr-r-dir">---</div>
       <div class="rcard-val" id="curr-r-vel">---</div>
       <div class="rcard-sub" id="curr-r-time">---</div>
@@ -429,24 +430,24 @@
     </div>
 
     <div class="rcard rcard-eta">
-      <div class="rcard-title" style="color:var(--yellow);">⏱ Modelo de Deriva</div>
+      <div class="rcard-title" style="color:var(--yellow);" data-i18n="drift-title">⏱ Drift Model</div>
       <div class="rcard-val" id="eta" style="color:var(--yellow); font-size:1.1em;">N/D</div>
       <div class="rcard-sub" id="model-info" style="color:var(--text-dim);">MODELO: ---</div>
     </div>
 
     <div class="rcard rcard-sar">
-      <div class="rcard-title" style="color:#a78bfa;">📡 Detecciones SAR</div>
+      <div class="rcard-title" style="color:#a78bfa;" data-i18n="sar-title">📡 SAR Detections</div>
       <div class="rcard-val" id="sar-info" style="font-size:0.9em; line-height:1.5;">---</div>
     </div>
 
     <div class="rcard rcard-cred">
-      <div class="rcard-title" style="color:rgba(255,255,255,0.45);">🧮 Heurística</div>
+      <div class="rcard-title" style="color:rgba(255,255,255,0.45);" data-i18n="heur-title">🧮 Heuristics</div>
       <div class="rcard-val" id="credibility-info" style="font-size:0.9em; color:var(--text-dim);">---</div>
     </div>
 
     <!-- Compartir — URL, embed, QR -->
     <div style="margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08);">
-      <div style="font-family:'Orbitron'; font-size:0.6em; color:rgba(255,255,255,0.4); letter-spacing:2px; font-weight:700; margin-bottom:8px;">COMPARTIR</div>
+      <div style="font-family:'Orbitron'; font-size:0.6em; color:rgba(255,255,255,0.4); letter-spacing:2px; font-weight:700; margin-bottom:8px;" data-i18n="share">SHARE</div>
       <div style="font-family:'Share Tech Mono'; font-size:0.72em; color:var(--cyan); background:rgba(0,0,0,0.3); padding:6px 8px; border-radius:3px; word-break:break-all; margin-bottom:8px;">
         https://sentinel.theboax.us/golfo/
       </div>
@@ -460,7 +461,7 @@
     </div>
 
     <div style="margin-top:auto; padding-top:10px; border-top:1px solid rgba(255,255,255,0.06); font-size:0.75em; color:rgba(255,255,255,0.3); line-height:1.5;">
-      Actualiza c/5 min.<br>
+      <span data-i18n="updates">Updates every 5 min.</span><br>
       <span id="last-update-r" style="color:rgba(255,255,255,0.4);">---</span>
     </div>
 
@@ -469,23 +470,23 @@
   <!-- BARRA INFERIOR 1: datos en vivo -->
   <div class="panel bar-data">
     <div class="bar-kpi">
-      <div class="k">ETA Impacto</div>
+      <div class="k">ETA Impact</div>
       <div class="v" id="eta-bottom" style="color:var(--yellow);">N/D</div>
     </div>
     <div class="bar-kpi">
-      <div class="k">Viento</div>
+      <div class="k">Wind</div>
       <div class="v" id="wind-info-bottom" style="color:var(--cyan);">---</div>
     </div>
     <div class="bar-kpi">
-      <div class="k">Corriente HYCOM</div>
+      <div class="k">HYCOM Current</div>
       <div class="v" id="current-info-bottom" style="color:var(--text);">---</div>
     </div>
     <div class="bar-kpi">
-      <div class="k">Modelo</div>
+      <div class="k">Model</div>
       <div class="v" id="model-info-bottom" style="color:var(--text-dim); font-size:0.85em;">---</div>
     </div>
     <div class="bar-kpi" style="margin-left:auto; border-right:none;">
-      <div class="k">Última actualización</div>
+      <div class="k">Last update</div>
       <div class="v" id="last-update" style="color:var(--green); font-size:0.88em;">---</div>
     </div>
     <div id="stale-warning-bottom" style="color:var(--yellow); font-size:0.82em; display:none;"></div>
@@ -495,10 +496,10 @@
   <div class="panel bar-sources">
     <a class="quick" href="https://cerulean.skytruth.org/" target="_blank" rel="noreferrer">
       <div class="k">SKYTRUTH CERULEAN</div>
-      <div class="v">SAR + IA · manchas activas</div>
+      <div class="v">SAR + AI · active slicks</div>
     </a>
     <a class="quick" href="https://skytruth.org/cerulean-methods/" target="_blank" rel="noreferrer">
-      <div class="k">METODOLOGÍA</div>
+      <div class="k">METHODOLOGY</div>
       <div class="v">U-Net · Sentinel-1 VV</div>
     </a>
     <a class="quick" href="https://apps.sentinel-hub.com/eo-browser/?zoom=7&lat=19.0&lng=-92.5&themeId=DEFAULT-THEME&datasetId=S1_AWS_IW_VVVH" target="_blank" rel="noreferrer">
@@ -507,7 +508,7 @@
     </a>
     <a class="quick" href="https://www.hycom.org/" target="_blank" rel="noreferrer">
       <div class="k">HYCOM / NOAA</div>
-      <div class="v">Corrientes oceánicas en vivo</div>
+      <div class="v">Live ocean currents</div>
     </a>
   </div>
 </div>
@@ -535,8 +536,8 @@
 
   setInterval(() => {
     const now = new Date();
-    document.getElementById('clock').textContent = now.toLocaleTimeString('es-MX',{hour12:false});
-    document.getElementById('full-date').textContent = now.toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase();
+    document.getElementById('clock').textContent = now.toLocaleTimeString('en-US',{hour12:false});
+    document.getElementById('full-date').textContent = now.toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase();
     updateLiveBadge();
   }, 1000);
 
@@ -957,7 +958,7 @@
       const maxDate = dates[dates.length - 1];
 
       const sarCountEl = document.getElementById('sar-total-count');
-      if (sarCountEl) sarCountEl.textContent = `${dets.length} manchas SAR detectadas (${minDate} → ${maxDate})`;
+      if (sarCountEl) sarCountEl.textContent = `${dets.length} SAR slicks detected (${minDate} → ${maxDate})`;
 
       // Pin grande para el DÍA 1
       const day1Dets = dets.filter(d => d.date === minDate);
@@ -966,14 +967,14 @@
         const pinHtml = `<div style="position:relative; text-align:center;">
           <div style="width:28px;height:28px;background:#fff;border:4px solid #000;border-radius:50%;box-shadow:0 0 20px rgba(255,255,255,1),0 0 40px rgba(255,255,255,0.5);"></div>
           <div style="position:absolute;top:-22px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);border:2px solid #fff;padding:3px 10px;font-family:Orbitron;font-size:12px;color:#fff;white-space:nowrap;font-weight:900;letter-spacing:2px;border-radius:3px;">
-            1 MAR — DÍA 1
+            MAR 1 — DAY 1
           </div>
           <div style="position:absolute;top:32px;left:50%;transform:translateX(-50%);font-family:'Share Tech Mono';font-size:10px;color:rgba(255,255,255,0.8);white-space:nowrap;text-shadow:0 0 6px #000,0 0 12px #000;">
-            Primera detección SAR
+            First SAR detection
           </div>
         </div>`;
         L.marker([d1.lat, d1.lon], {icon: L.divIcon({className:'', html:pinHtml, iconSize:[120,60], iconAnchor:[60,34]}), zIndexOffset: 2000}).bindTooltip(
-          `<b>PRIMERA DETECCIÓN SAR</b><br>${d1.date}<br>Área: ${d1.area_km2} km²<br><a href="${d1.url}" target="_blank">Cerulean #${d1.id}</a>`,
+          `<b>FIRST SAR DETECTION</b><br>${d1.date}<br>Area: ${d1.area_km2} km²<br><a href="${d1.url}" target="_blank">Cerulean #${d1.id}</a>`,
           {direction:'top', opacity:0.95}
         ).addTo(sarDetectionsLayer);
       }
@@ -992,9 +993,9 @@
         const confPct = (d.conf * 100).toFixed(0);
         marker.bindTooltip(
           `<b>${d.date}</b><br>` +
-          `Área: ${d.area_km2} km²<br>` +
-          `Confianza: ${confPct}%<br>` +
-          `<a href="${d.url}" target="_blank">Ver en Cerulean #${d.id}</a>`,
+          `Area: ${d.area_km2} km²<br>` +
+          `Confidence: ${confPct}%<br>` +
+          `<a href="${d.url}" target="_blank">View on Cerulean #${d.id}</a>`,
           {direction: 'top', opacity: 0.95}
         );
         marker.addTo(sarDetectionsLayer);
@@ -1027,15 +1028,15 @@
           const dayNum = Math.round((dayDate - startDate) / 86400000) + 1;
           const color = dateToColor(day, daysAsc[0], daysAsc[daysAsc.length-1]);
           const dot = `display:inline-block;width:9px;height:9px;border-radius:50%;background:${color};border:1.5px solid rgba(0,0,0,0.5);margin-right:5px;vertical-align:middle;`;
-          const dateLabel = dayDate.toLocaleDateString('es-MX', {day:'numeric', month:'short'}).toUpperCase();
+          const dateLabel = dayDate.toLocaleDateString('en-US', {day:'numeric', month:'short'}).toUpperCase();
           let desc = isOldest
-            ? `Primera detección satelital. ${info.count} mancha${info.count>1?'s':''}, ${info.totalArea.toFixed(1)} km² totales.`
+            ? `First satellite detection. ${info.count} slick${info.count>1?'s':''}, ${info.totalArea.toFixed(1)} km² total.`
             : info.maxArea > 30
-              ? `${info.count} mancha${info.count>1?'s':''} detectada${info.count>1?'s':''}. Mayor: ${info.maxArea.toFixed(1)} km². Acum: ${cumArea.toFixed(0)} km².`
+              ? `${info.count} slick${info.count>1?'s':''} detected. Largest: ${info.maxArea.toFixed(1)} km². Cumul: ${cumArea.toFixed(0)} km².`
               : info.count >= 5
-                ? `${info.count} manchas, ${info.totalArea.toFixed(1)} km². Derrame en dispersión.`
-                : `${info.count} detección${info.count>1?'es':''}, ${info.totalArea.toFixed(1)} km².`;
-          return `<div style="margin-bottom:7px;"><span style="${dot}"></span><b style="color:#fff;font-size:0.85em;">DÍA ${dayNum}</b> <span style="font-size:0.8em;color:rgba(255,255,255,0.5);">${dateLabel}</span><br><span style="font-size:0.88em;">${desc}</span></div>`;
+                ? `${info.count} slicks, ${info.totalArea.toFixed(1)} km². Spill dispersing.`
+                : `${info.count} detection${info.count>1?'s':''}, ${info.totalArea.toFixed(1)} km².`;
+          return `<div style="margin-bottom:7px;"><span style="${dot}"></span><b style="color:#fff;font-size:0.85em;">DAY ${dayNum}</b> <span style="font-size:0.8em;color:rgba(255,255,255,0.5);">${dateLabel}</span><br><span style="font-size:0.88em;">${desc}</span></div>`;
         }
 
         // SANDWICH: más reciente arriba → medio colapsado → Día 1 abajo
@@ -1050,7 +1051,7 @@
         if (daysDesc.length > 3) {
           const mid = daysDesc.slice(2, daysDesc.length - 1);
           html += `<div style="margin:4px 0;">
-            <div id="tl-toggle" onclick="var e=document.getElementById('tl-mid');var t=document.getElementById('tl-toggle');var open=e.style.display==='block';e.style.display=open?'none':'block';t.textContent=open?'··· ${mid.length} días anteriores — ver más ···':'··· colapsar ···';" style="padding:5px 8px;background:rgba(255,255,255,0.04);border:1px dashed rgba(255,255,255,0.15);cursor:pointer;color:rgba(255,255,255,0.45);font-size:0.80em;text-align:center;border-radius:2px;">··· ${mid.length} días anteriores — ver más ···</div>
+            <div id="tl-toggle" onclick="var e=document.getElementById('tl-mid');var t=document.getElementById('tl-toggle');var open=e.style.display==='block';e.style.display=open?'none':'block';t.textContent=open?'··· ${mid.length} previous days — show more ···':'··· collapse ···';" style="padding:5px 8px;background:rgba(255,255,255,0.04);border:1px dashed rgba(255,255,255,0.15);cursor:pointer;color:rgba(255,255,255,0.45);font-size:0.80em;text-align:center;border-radius:2px;">··· ${mid.length} previous days — show more ···</div>
             <div id="tl-mid" style="display:none;">${mid.map(d => renderTLDay(d, false)).join('')}</div>
           </div>`;
         } else if (daysDesc.length === 3) {
@@ -1062,7 +1063,7 @@
           html += `<div style="border-top:1px solid rgba(255,255,255,0.12);padding-top:6px;margin-top:2px;">${renderTLDay(daysAsc[0], true)}</div>`;
         }
 
-        html += `<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.1);font-size:0.82em;color:rgba(255,255,255,0.5);">${dets.length} detecciones · ${daysAsc.length} días · ${totalCumArea.toFixed(0)} km² acumulados</div>`;
+        html += `<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.1);font-size:0.82em;color:rgba(255,255,255,0.5);">${dets.length} detections · ${daysAsc.length} days · ${totalCumArea.toFixed(0)} km² cumulative</div>`;
         timelineEl.innerHTML = html;
       }
     } catch (e) {
@@ -1077,6 +1078,49 @@
   bootstrapTargetUi();
   fetchAll(); setInterval(fetchAll, 300000);
   setInterval(updateCountdown, 1000);
+
+  // ── i18n toggle EN ↔ ES ──
+  var currentLang = 'en';
+  var i18n = {
+    'active-spill': { en: '⚠ ACTIVE SPILL', es: '⚠ DERRAME ACTIVO' },
+    'since': { en: 'GULF OF MEXICO · SINCE MAR 1, 2026 · DAY', es: 'GOLFO DE MÉXICO · DESDE 1 MAR 2026 · DÍA' },
+    'what': { en: 'What is this monitor?', es: '¿Qué es este monitor?' },
+    'what-body': { en: 'Independent satellite tracking of an active oil spill. Monitoring this event is a public responsibility: it affects coastal fishing and tourism economies, protected marine wildlife, and seven natural reserves. Verifiable data, open source.', es: 'Seguimiento satelital independiente del derrame activo. El seguimiento de este evento es una responsabilidad pública: afecta economías pesqueras y turísticas costeras, fauna marina protegida y siete reservas naturales. Datos verificables, código abierto.' },
+    'facts': { en: 'Documented facts', es: 'Hechos documentados' },
+    'facts-body': { en: '<b style="color:#fff;">630+ km of coastline</b> across four states. SEMAR identified three sources: unidentified vessel near <b>Coatzacoalcos</b>, nearby natural seeps, and emanations at <b>Cantarell</b>. 430 tonnes of crude recovered. Sea turtles and a manatee killed. Seven natural reserves affected.', es: '<b style="color:#fff;">630+ km de costa</b> en cuatro estados. SEMAR identificó tres fuentes: buque no identificado en <b>Coatzacoalcos</b>, chapopoteras cercanas y emanaciones en <b>Cantarell</b>. 430 toneladas de crudo retiradas. Tortugas marinas y un manatí muertos. Siete reservas naturales afectadas.' },
+    'timeline': { en: 'Satellite Timeline (SAR · Sentinel-1)', es: 'Cronología Satelital (SAR · Sentinel-1)' },
+    'coverage': { en: 'Verified coverage', es: 'Cobertura verificada' },
+    'live-data': { en: 'LIVE DATA', es: 'DATOS EN VIVO' },
+    'wind-title': { en: '🌬 Wind (Open-Meteo)', es: '🌬 Viento (Open-Meteo)' },
+    'curr-title': { en: '🌊 Ocean Current (HYCOM)', es: '🌊 Corriente Marina (HYCOM)' },
+    'drift-title': { en: '⏱ Drift Model', es: '⏱ Modelo de Deriva' },
+    'sar-title': { en: '📡 SAR Detections', es: '📡 Detecciones SAR' },
+    'heur-title': { en: '🧮 Heuristics', es: '🧮 Heurística' },
+    'share': { en: 'SHARE', es: 'COMPARTIR' },
+    'updates': { en: 'Updates every 5 min.', es: 'Actualiza c/5 min.' },
+  };
+  // Map data-i18n keys to elements
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var key = el.getAttribute('data-i18n');
+    if (i18n[key]) el.textContent = i18n[key][currentLang];
+  });
+
+  function toggleLang() {
+    currentLang = currentLang === 'en' ? 'es' : 'en';
+    document.documentElement.lang = currentLang;
+    var btn = document.getElementById('lang-toggle');
+    btn.textContent = currentLang === 'en' ? 'ES' : 'EN';
+    document.querySelectorAll('[data-i18n]').forEach(function(el) {
+      var key = el.getAttribute('data-i18n');
+      if (i18n[key]) {
+        if (el.getAttribute('data-html') === '1') el.innerHTML = i18n[key][currentLang];
+        else el.textContent = i18n[key][currentLang];
+      }
+    });
+    // Re-render timeline
+    sarLoaded = false;
+    loadSarDetections();
+  }
 </script>
 </body>
 </html>
