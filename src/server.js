@@ -17,6 +17,9 @@ import fleetRoutes from './routes/fleet.route.js';
 import healthRoutes from './routes/health.route.js';
 import googleAdsRoutes from './routes/google-ads.route.js';
 import linkedinRoutes from './routes/linkedin.route.js';
+import typeformRoutes from './routes/typeform.route.js';
+import emailInboundRoutes from './routes/email-inbound.route.js';
+import twitterAdsRoutes from './routes/twitter-ads.route.js';
 import { tenantMiddleware, tenantStorage } from './middleware/tenant.middleware.js';
 import { errorMiddleware } from './middleware/error.middleware.js';
 import path from 'path';
@@ -153,6 +156,12 @@ app.use('/api/submit', submitLimiter, submitRoutes);
 app.use('/api/integrations/google-ads', submitLimiter, googleAdsRoutes);
 // LinkedIn Lead Gen Forms → ?token=PROJECT_TOKEN (firma HMAC en header)
 app.use('/api/integrations/linkedin', submitLimiter, linkedinRoutes);
+// Typeform / Tally → ?token=PROJECT_TOKEN (firma HMAC opcional en header)
+app.use('/api/integrations/typeform', submitLimiter, typeformRoutes);
+// Email Inbound → Resend / SendGrid → ?token=PROJECT_TOKEN
+app.use('/api/integrations/email', submitLimiter, emailInboundRoutes);
+// X (Twitter) Ads Lead Gen → ?token=PROJECT_TOKEN (CRC challenge + HMAC)
+app.use('/api/integrations/x-ads', submitLimiter, twitterAdsRoutes);
 
 // SSE: EventSource no soporta headers custom, convertir query param a header
 app.use('/stream/live', (req, res, next) => {
