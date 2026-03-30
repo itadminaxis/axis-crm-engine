@@ -230,12 +230,27 @@
     z-index: 1000;
     background: rgba(9,16,32,0.82);
     border: 1px solid rgba(255,255,255,0.12);
-    padding: 8px 10px;
+    padding: 0;
     font-family: 'Share Tech Mono', monospace;
     font-size: 0.8em;
     color: rgba(255,255,255,0.78);
     line-height: 1.35;
     max-width: 260px;
+  }
+  /* Desktop: legend always visible */
+  .map-legend .legend-toggle {
+    display: none;
+  }
+  .map-legend .legend-body {
+    display: block;
+    padding: 8px 10px;
+  }
+  .map-legend .legend-toggle::after {
+    content: '▸'; font-size: 1.1em; opacity: 0.6;
+    transition: transform 0.2s;
+  }
+  .map-legend.legend-open .legend-toggle::after {
+    transform: rotate(90deg);
   }
   .legend-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
   .legend-swatch { width: 18px; height: 10px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.15); }
@@ -258,6 +273,25 @@
   /* ═══════════════════════════════════════════
      RESPONSIVE — MOBILE / VERTICAL (≤ 840px)
      ═══════════════════════════════════════════ */
+
+  /* Tap-to-interact overlay (all screens, toggled via JS) */
+  .map-touch-overlay {
+    display: none;
+    position: absolute; inset: 0; z-index: 1200;
+    background: rgba(0,0,0,0.35);
+    align-items: center; justify-content: center;
+    cursor: pointer;
+    -webkit-backdrop-filter: blur(1px);
+    backdrop-filter: blur(1px);
+  }
+  .map-touch-overlay span {
+    font-family: 'Orbitron'; font-size: 0.8em; letter-spacing: 2px;
+    color: #fff; background: rgba(15,23,42,0.85);
+    border: 1px solid rgba(56,189,248,0.4);
+    padding: 10px 22px; border-radius: 4px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  }
+
   @media (max-width: 840px) {
     body {
       height: auto;
@@ -278,7 +312,7 @@
     header {
       flex-direction: column;
       padding: 10px 14px;
-      gap: 8px;
+      gap: 6px;
       min-height: auto;
     }
     header > div:first-child {
@@ -292,7 +326,7 @@
     header > div:nth-child(2) { order: 3; justify-content: center; }
     header > div:last-child { text-align: center; }
     header #clock { font-size: 1.5em !important; }
-    header .update-banner { font-size: 0.7em; }
+    header .update-banner { display: none; }
 
     /* ── Map — full width, fixed height ── */
     .map-container {
@@ -302,6 +336,9 @@
       min-height: 280px;
       order: 1;
     }
+
+    /* Show tap-to-interact overlay on mobile */
+    .map-touch-overlay { display: flex; }
 
     /* Windy PiP — hide on mobile (data is in sidebar) */
     .windy-pip { display: none; }
@@ -313,18 +350,38 @@
       font-size: 0.62em;
     }
 
-    /* Map legend — compact */
-    .map-legend {
-      max-width: 200px;
-      font-size: 0.72em;
-      padding: 6px 8px;
-      bottom: 6px; left: 6px;
-    }
+    /* #2: Hide SAR label on mobile — info already in sidebar */
+    .sar-label-overlay { display: none !important; }
 
-    /* SAR label top-left — smaller */
-    .map-container > div[style*="position:absolute"][style*="top:10px"][style*="left:10px"] {
-      font-size: 0.55em !important;
-      padding: 4px 8px !important;
+    /* #1: Legend collapsible on mobile — starts collapsed */
+    .map-legend {
+      max-width: 220px;
+      font-size: 0.72em;
+      padding: 0;
+      bottom: 6px; left: 6px;
+      background: rgba(9,16,32,0.92);
+      cursor: pointer;
+    }
+    .map-legend .legend-toggle {
+      display: flex;
+      align-items: center; gap: 6px;
+      padding: 7px 10px;
+      font-family: 'Orbitron'; font-size: 0.75em;
+      letter-spacing: 2px; color: rgba(255,255,255,0.9);
+    }
+    .map-legend .legend-toggle::after {
+      content: '▸'; font-size: 1.1em; opacity: 0.6;
+      transition: transform 0.2s;
+    }
+    .map-legend.legend-open .legend-toggle::after {
+      transform: rotate(90deg);
+    }
+    .map-legend .legend-body {
+      display: none;
+      padding: 6px 10px 8px;
+    }
+    .map-legend.legend-open .legend-body {
+      display: block;
     }
 
     /* ── Sidebars — full width, stacked ── */
@@ -348,23 +405,33 @@
       border-left: none;
     }
 
-    /* ── Bottom bars — stack vertically ── */
-    .bar-data {
-      grid-column: unset; grid-row: unset;
-      width: 100%;
-      order: 4;
-      flex-wrap: wrap;
-      gap: 8px 16px;
-      padding: 10px 14px;
-      min-height: auto;
-      height: auto;
+    /* #6: Windy iframe — smaller, no accidental interaction */
+    .sidebar-right .rcard iframe {
+      height: 150px;
+      pointer-events: none;
     }
-    .bar-kpi { border-right: none; padding-right: 0; }
+    .sidebar-right .rcard.windy-card {
+      position: relative;
+    }
+    .sidebar-right .rcard.windy-card::after {
+      content: 'Tap to interact';
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.2);
+      font-family: 'Orbitron'; font-size: 0.55em;
+      color: rgba(255,255,255,0.6); letter-spacing: 1px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    /* #5: Hide bar-data on mobile (duplicated in sidebar) */
+    .bar-data { display: none !important; }
 
     .bar-sources {
       grid-column: unset; grid-row: unset;
       width: 100%;
-      order: 5;
+      order: 4;
       grid-template-columns: 1fr 1fr;
       padding: 8px;
       height: auto;
@@ -388,20 +455,20 @@
     .math-box { font-size: 0.88em; padding: 10px; }
     .method-box { font-size: 0.85em; padding: 10px; }
 
-    /* ── Matrix table — scrollable ── */
+    /* ── Matrix table ── */
     .matrix { font-size: 0.78em; }
     .matrix th, .matrix td { padding: 6px 7px; }
   }
 
   /* Extra small screens (≤ 480px) */
   @media (max-width: 480px) {
+    /* #4: Compact header — hide LLC subtitle */
+    header > div:first-child > div { display: none !important; }
     header h1 { font-size: 0.95em; letter-spacing: 1.5px; }
-    header > div:first-child > div { font-size: 0.68em !important; }
     header #clock { font-size: 1.2em !important; }
 
     .map-container { height: 45vh; min-height: 240px; }
 
-    .bar-data { font-size: 0.82em; }
     .bar-sources { grid-template-columns: 1fr; }
 
     .sidebar-left, .sidebar-right { padding: 10px 10px; }
@@ -415,6 +482,7 @@
 
     .live-badge { font-size: 0.55em; padding: 3px 8px; gap: 5px; }
     .map-legend { max-width: 170px; font-size: 0.65em; }
+    .map-touch-overlay span { font-size: 0.65em; padding: 8px 16px; }
   }
 
 </style>
@@ -518,49 +586,55 @@
 
   <div class="panel map-container">
     <div id="map1"></div>
-    <!-- LIVE badge — centro superior del mapa -->
+    <!-- Tap-to-interact overlay (mobile only, shown via CSS) -->
+    <div class="map-touch-overlay" id="map-touch-overlay" onclick="activateMap()">
+      <span>TAP TO INTERACT</span>
+    </div>
+    <!-- LIVE badge — top-right del mapa -->
     <div class="live-badge" id="live-badge">
       <div class="live-dot"></div>
       <span style="letter-spacing:3px;">LIVE</span>
       <span id="live-time" style="font-size:0.85em; opacity:0.85; letter-spacing:1px;">--:--</span>
       <span style="width:1px; height:14px; background:rgba(255,255,255,0.2); display:inline-block; margin: 0 2px;"></span>
-      <span style="font-size:0.78em; color:rgba(239,68,68,0.9); letter-spacing:1px;">DÍA <span id="live-day">—</span></span>
+      <span style="font-size:0.78em; color:rgba(239,68,68,0.9); letter-spacing:1px;">DAY <span id="live-day">—</span></span>
     </div>
-    <div style="position:absolute; top:10px; left:10px; z-index:1000; background:rgba(9,16,32,0.88); border:1px solid rgba(255,43,85,0.4); padding:6px 12px; font-family:'Orbitron'; font-size:0.65em; color:rgba(255,255,255,0.9); letter-spacing:1px;">
-      DETECCIONES SAR • SENTINEL-1 + ML (SkyTruth Cerulean)
+    <div class="sar-label-overlay" style="position:absolute; top:10px; left:10px; z-index:1000; background:rgba(9,16,32,0.88); border:1px solid rgba(255,43,85,0.4); padding:6px 12px; font-family:'Orbitron'; font-size:0.65em; color:rgba(255,255,255,0.9); letter-spacing:1px;">
+      SAR DETECTIONS • SENTINEL-1 + ML (SkyTruth Cerulean)
     </div>
-    <div class="map-legend" id="map-legend">
-      <div style="font-family:'Orbitron'; font-size:0.75em; letter-spacing:2px; color:rgba(255,255,255,0.9);">LEGEND</div>
-      <div style="margin-top:8px; padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.1);">
-        <div style="font-size:0.75em; letter-spacing:1px; margin-bottom:4px;">SAR DETECTIONS (CERULEAN · ML)</div>
-        <div style="display:flex; align-items:center; gap:3px;">
-          <div style="width:11px;height:11px;border-radius:50%;background:#fff;border:2px solid #000;"></div>
-          <div style="font-size:0.75em;">1 mar</div>
-          <div style="width:11px;height:11px;border-radius:50%;background:#ffff64;border:1px solid rgba(0,0,0,0.3);"></div>
-          <div style="width:11px;height:11px;border-radius:50%;background:#ffb400;border:1px solid rgba(0,0,0,0.3);"></div>
-          <div style="width:11px;height:11px;border-radius:50%;background:#ff5000;border:1px solid rgba(0,0,0,0.3);"></div>
-          <div style="width:11px;height:11px;border-radius:50%;background:#dc001e;border:1px solid rgba(0,0,0,0.3);"></div>
-          <div style="font-size:0.75em;">hoy</div>
+    <div class="map-legend" id="map-legend" onclick="this.classList.toggle('legend-open')">
+      <div class="legend-toggle">LEGEND</div>
+      <div class="legend-body">
+        <div style="padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.1);">
+          <div style="font-size:0.75em; letter-spacing:1px; margin-bottom:4px;">SAR DETECTIONS (CERULEAN · ML)</div>
+          <div style="display:flex; align-items:center; gap:3px;">
+            <div style="width:11px;height:11px;border-radius:50%;background:#fff;border:2px solid #000;"></div>
+            <div style="font-size:0.75em;">1 mar</div>
+            <div style="width:11px;height:11px;border-radius:50%;background:#ffff64;border:1px solid rgba(0,0,0,0.3);"></div>
+            <div style="width:11px;height:11px;border-radius:50%;background:#ffb400;border:1px solid rgba(0,0,0,0.3);"></div>
+            <div style="width:11px;height:11px;border-radius:50%;background:#ff5000;border:1px solid rgba(0,0,0,0.3);"></div>
+            <div style="width:11px;height:11px;border-radius:50%;background:#dc001e;border:1px solid rgba(0,0,0,0.3);"></div>
+            <div style="font-size:0.75em;">today</div>
+          </div>
+          <div style="font-size:0.75em; margin-top:2px;">Size ∝ slick area (km²)</div>
+          <div style="font-size:0.75em; margin-top:1px;">Large white pin = first detection (Day 1)</div>
         </div>
-        <div style="font-size:0.75em; margin-top:2px;">Size ∝ slick area (km²)</div>
-        <div style="font-size:0.75em; margin-top:1px;">Large white pin = first detection (Day 1)</div>
+        <div style="margin-top:6px;">
+          <div style="font-size:0.75em; letter-spacing:1px; margin-bottom:4px;">DRIFT MODEL</div>
+          <div class="legend-row">
+            <div class="legend-swatch" style="background:#00c8ff;"></div>
+            <div>Estimated trajectory</div>
+          </div>
+          <div class="legend-row">
+            <div class="legend-swatch" style="background:rgba(255, 43, 85, 0.22); border-color: rgba(255, 43, 85, 0.55);"></div>
+            <div>Uncertainty corridor</div>
+          </div>
+          <div class="legend-row">
+            <div class="legend-dot" style="background:var(--red);"></div>
+            <div>Confirmed origin (Coatzacoalcos)</div>
+          </div>
+        </div>
+        <div id="sar-total-count" style="font-family:'Share Tech Mono'; font-size:0.8em; color:var(--yellow); margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.1);">Loading SAR detections...</div>
       </div>
-      <div style="margin-top:6px;">
-        <div style="font-size:0.75em; letter-spacing:1px; margin-bottom:4px;">DRIFT MODEL</div>
-        <div class="legend-row">
-          <div class="legend-swatch" style="background:#00c8ff;"></div>
-          <div>Estimated trajectory</div>
-        </div>
-        <div class="legend-row">
-          <div class="legend-swatch" style="background:rgba(255, 43, 85, 0.22); border-color: rgba(255, 43, 85, 0.55);"></div>
-          <div>Uncertainty corridor</div>
-        </div>
-        <div class="legend-row">
-          <div class="legend-dot" style="background:var(--red);"></div>
-          <div>Confirmed origin (Coatzacoalcos)</div>
-        </div>
-      </div>
-      <div id="sar-total-count" style="font-family:'Share Tech Mono'; font-size:0.8em; color:var(--yellow); margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.1);">Cargando detecciones SAR...</div>
     </div>
   </div>
 
@@ -572,7 +646,7 @@
     </div>
 
     <!-- Windy corrientes como tarjeta -->
-    <div class="rcard" style="border-left:3px solid var(--cyan); padding:0; overflow:hidden; margin-bottom:10px;">
+    <div class="rcard windy-card" style="border-left:3px solid var(--cyan); padding:0; overflow:hidden; margin-bottom:10px;">
       <div style="font-family:'Orbitron'; font-size:0.58em; letter-spacing:2px; color:var(--cyan); padding:7px 10px; background:rgba(56,189,248,0.06); border-bottom:1px solid rgba(56,189,248,0.15);">🌊 LIVE CURRENTS · WINDY.COM</div>
       <iframe src="https://embed.windy.com/embed2.html?lat=22&lon=-96&zoom=4&overlay=currents&marker=true" loading="lazy" style="width:100%; height:180px; border:none; display:block;"></iframe>
     </div>
@@ -705,10 +779,59 @@
 
   updateLiveBadge(); // ejecución inmediata al cargar
 
-  var map1 = L.map('map1', {zoomControl: false, attributionControl: true}).setView([22.5, -92.0], 5);
+  var isMobile = window.matchMedia('(max-width: 840px)').matches;
+
+  var map1 = L.map('map1', {
+    zoomControl: false,
+    attributionControl: true,
+    scrollWheelZoom: !isMobile,
+    dragging: !isMobile,
+    touchZoom: !isMobile,
+    doubleClickZoom: !isMobile,
+    tap: !isMobile
+  }).setView([22.5, -92.0], 5);
   map1.attributionControl.setPrefix(false);
   var baseLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {subdomains: 'abcd', attribution: '© <a href="https://carto.com/">CARTO</a> © <a href="https://www.openstreetmap.org/copyright">OSM</a> | MODIS: <a href="https://earthdata.nasa.gov">NASA Earthdata</a> GIBS'}).addTo(map1);
-  
+
+  // #3: Tap-to-interact — unlock map on mobile
+  function activateMap() {
+    var overlay = document.getElementById('map-touch-overlay');
+    if (overlay) overlay.style.display = 'none';
+    map1.scrollWheelZoom.enable();
+    map1.dragging.enable();
+    map1.touchZoom.enable();
+    map1.doubleClickZoom.enable();
+    if (map1.tap) map1.tap.enable();
+  }
+  // Re-lock map when user scrolls away (touch end outside map)
+  if (isMobile) {
+    document.addEventListener('scroll', function() {
+      var overlay = document.getElementById('map-touch-overlay');
+      if (overlay && overlay.style.display === 'none') {
+        overlay.style.display = 'flex';
+        map1.scrollWheelZoom.disable();
+        map1.dragging.disable();
+        map1.touchZoom.disable();
+        map1.doubleClickZoom.disable();
+      }
+    }, {passive: true});
+
+    // Legend: open by default on desktop, collapsed on mobile (CSS handles display)
+    // Windy card: enable pointer events on tap
+    var windyCard = document.querySelector('.windy-card');
+    if (windyCard) {
+      windyCard.addEventListener('click', function() {
+        var iframe = windyCard.querySelector('iframe');
+        if (iframe) iframe.style.pointerEvents = 'auto';
+        windyCard.style.removeProperty('--after-opacity');
+      });
+    }
+  } else {
+    // Desktop: legend always open
+    var legend = document.getElementById('map-legend');
+    if (legend) legend.classList.add('legend-open');
+  }
+
   // MODIS desactivado: las nubes impiden ver las detecciones SAR.
   // Basemap CARTO dark muestra el océano limpio para que las manchas destaquen.
 
