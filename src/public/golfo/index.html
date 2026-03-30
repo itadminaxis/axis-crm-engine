@@ -255,6 +255,168 @@
     100% { opacity: 0.35; transform: scale(0.98); }
   }
 
+  /* ═══════════════════════════════════════════
+     RESPONSIVE — MOBILE / VERTICAL (≤ 840px)
+     ═══════════════════════════════════════════ */
+  @media (max-width: 840px) {
+    body {
+      height: auto;
+      overflow: auto;
+      font-size: 14px;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: auto;
+      min-height: 100vh;
+      padding: 4px;
+      gap: 4px;
+    }
+
+    /* ── Header ── */
+    header {
+      flex-direction: column;
+      padding: 10px 14px;
+      gap: 8px;
+      min-height: auto;
+    }
+    header > div:first-child {
+      flex-direction: column;
+      align-items: center !important;
+      gap: 4px !important;
+      text-align: center;
+    }
+    header h1 { font-size: 1.15em; letter-spacing: 2px; }
+    header > div:first-child > div { font-size: 0.78em !important; letter-spacing: 2px !important; }
+    header > div:nth-child(2) { order: 3; justify-content: center; }
+    header > div:last-child { text-align: center; }
+    header #clock { font-size: 1.5em !important; }
+    header .update-banner { font-size: 0.7em; }
+
+    /* ── Map — full width, fixed height ── */
+    .map-container {
+      grid-column: unset; grid-row: unset;
+      width: 100%;
+      height: 55vh;
+      min-height: 280px;
+      order: 1;
+    }
+
+    /* Windy PiP — hide on mobile (data is in sidebar) */
+    .windy-pip { display: none; }
+
+    /* LIVE badge — smaller on mobile */
+    .live-badge {
+      top: 8px; right: 8px;
+      padding: 4px 10px;
+      font-size: 0.62em;
+    }
+
+    /* Map legend — compact */
+    .map-legend {
+      max-width: 200px;
+      font-size: 0.72em;
+      padding: 6px 8px;
+      bottom: 6px; left: 6px;
+    }
+
+    /* SAR label top-left — smaller */
+    .map-container > div[style*="position:absolute"][style*="top:10px"][style*="left:10px"] {
+      font-size: 0.55em !important;
+      padding: 4px 8px !important;
+    }
+
+    /* ── Sidebars — full width, stacked ── */
+    .sidebar-left {
+      grid-column: unset; grid-row: unset;
+      width: 100%;
+      order: 2;
+      padding: 12px 14px;
+      max-height: none;
+      overflow-y: visible;
+      border-right: none;
+    }
+
+    .sidebar-right {
+      grid-column: unset; grid-row: unset;
+      width: 100%;
+      order: 3;
+      padding: 12px 14px;
+      max-height: none;
+      overflow-y: visible;
+      border-left: none;
+    }
+
+    /* ── Bottom bars — stack vertically ── */
+    .bar-data {
+      grid-column: unset; grid-row: unset;
+      width: 100%;
+      order: 4;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      padding: 10px 14px;
+      min-height: auto;
+      height: auto;
+    }
+    .bar-kpi { border-right: none; padding-right: 0; }
+
+    .bar-sources {
+      grid-column: unset; grid-row: unset;
+      width: 100%;
+      order: 5;
+      grid-template-columns: 1fr 1fr;
+      padding: 8px;
+      height: auto;
+    }
+
+    /* ── Section blocks — tighter on mobile ── */
+    .sec { padding: 10px 12px; margin-bottom: 10px; }
+    .sec-label { font-size: 0.65em; }
+
+    /* ── Right sidebar cards ── */
+    .rcard { padding: 8px 10px; }
+    .rcard-title { font-size: 0.58em; }
+
+    /* ── Live grid (if present) ── */
+    .live-grid { grid-template-columns: 1fr; }
+
+    /* ── Quick links grid ── */
+    .quick-grid { grid-template-columns: 1fr; }
+
+    /* ── Math/method boxes ── */
+    .math-box { font-size: 0.88em; padding: 10px; }
+    .method-box { font-size: 0.85em; padding: 10px; }
+
+    /* ── Matrix table — scrollable ── */
+    .matrix { font-size: 0.78em; }
+    .matrix th, .matrix td { padding: 6px 7px; }
+  }
+
+  /* Extra small screens (≤ 480px) */
+  @media (max-width: 480px) {
+    header h1 { font-size: 0.95em; letter-spacing: 1.5px; }
+    header > div:first-child > div { font-size: 0.68em !important; }
+    header #clock { font-size: 1.2em !important; }
+
+    .map-container { height: 45vh; min-height: 240px; }
+
+    .bar-data { font-size: 0.82em; }
+    .bar-sources { grid-template-columns: 1fr; }
+
+    .sidebar-left, .sidebar-right { padding: 10px 10px; }
+    .sec { padding: 8px 10px; }
+
+    /* Share section QR + embed — stack vertically */
+    .sidebar-right div[style*="display:flex"][style*="gap:8px"] {
+      flex-direction: column !important;
+      align-items: center !important;
+    }
+
+    .live-badge { font-size: 0.55em; padding: 3px 8px; gap: 5px; }
+    .map-legend { max-width: 170px; font-size: 0.65em; }
+  }
+
 </style>
 </head>
 <body>
@@ -264,7 +426,7 @@
       <h1>GULF SENTINEL</h1>
       <div style="color:var(--yellow); font-family:'Orbitron'; font-size:1.0em; letter-spacing:3px;">THE BOREAL AXIS, LLC</div>
     </div>
-    <div style="display:flex;align-items:center;gap:14px;">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;">
       <button id="lang-toggle" onclick="toggleLang()" style="font-family:'Share Tech Mono';font-size:0.78em;color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);padding:4px 10px;cursor:pointer;letter-spacing:1px;border-radius:3px;white-space:nowrap;">ES</button>
       <a href="mailto:sentinel@theboax.us" style="font-family:'Share Tech Mono';font-size:0.88em;color:var(--cyan);text-decoration:none;border:1px solid rgba(0,200,255,0.35);padding:5px 14px;letter-spacing:1px;white-space:nowrap;">✉ sentinel@theboax.us</a>
     </div>
